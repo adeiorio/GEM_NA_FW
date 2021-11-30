@@ -1,8 +1,8 @@
 import ROOT
 from array import array
+import numpy as np
 
 ROOT.gStyle.SetOptStat(0)
-ROOT.gROOT.SetBatch()        # don't pop up canvases
 ROOT.TH1.SetDefaultSumw2()
 ROOT.TGaxis.SetMaxDigits(3)
 
@@ -11,9 +11,11 @@ colors = [ROOT.kBlue,
           ROOT.kRed,
           ROOT.kGreen+2,
           ROOT.kMagenta+2,
-          ROOT.kAzure+6]
+          ROOT.kAzure,
+	  ROOT.kCyan]
 
 def print_hist(plotpath, hist, name, option = "HIST", log = False, stack = False, title = ""):
+    #ROOT.gROOT.SetBatch()        # don't pop up canvases
     if not(isinstance(hist, list)):
         c1 = ROOT.TCanvas(name, "c1", 50,50,700,600)
         hist.Draw(option)            
@@ -34,6 +36,7 @@ def print_hist(plotpath, hist, name, option = "HIST", log = False, stack = False
                 i += 1
             mg.SetMinimum(min(minima))
             mg.Draw(option)
+            #mg.Draw("AP")
             Low = hist[0].GetXaxis().GetBinLowEdge(1)
             Nbin = hist[0].GetXaxis().GetNbins()
             High = hist[0].GetXaxis().GetBinUpEdge(Nbin)
@@ -88,10 +91,10 @@ def print_hist(plotpath, hist, name, option = "HIST", log = False, stack = False
         c1.Print(plotpath + "/" + str(name) + '.root')
 
 def save_hist(infile, plotpath, hist, option = "HIST"):
-     fout = ROOT.TFile.Open(plotpath + "/" + infile +".root", "UPDATE")
-     fout.cd()
-     hist.Write()
-     fout.Close()
+    fout = ROOT.TFile.Open(plotpath + "/" + infile +".root", "UPDATE")
+    fout.cd()
+    hist.Write()
+    fout.Close()
 
 def make_graph(entries, x_array, y_array, name, title, x_title, y_title, color, style = 20):
     graph = ROOT.TGraph(entries, x_array, y_array)
@@ -247,3 +250,15 @@ def clean_antiFFT(real, imag, ps):
     hb = ROOT.TH1.TransformHisto(fft_back, hb, "Re")
     hb.SetTitle("The backward transform result")
     return hb
+
+
+def treshold(ig, time):     #ig e time sono due array.array
+    list_ig = []
+    for i in len(time):
+        if(time[i]>400000): 
+            list_ig.append(ig[i])
+    
+    np_ig = np.array(list_ig)
+    basel = 5* np.var(np_ig)
+
+    return basel 
