@@ -22,7 +22,7 @@ parser.add_option('-f', '--folder', dest='folder', type='string', default = '201
 parser.add_option('-i', '--input', dest='input', type='string', default = 'CERN_20191212_0000.root', help="Enter an input root file")
 (opt, args) = parser.parse_args()
 
-folder = opt.folder
+folder = '/eos/home-a/adeiorio/GEM/' + opt.folder
 infile = ROOT.TFile.Open(folder + '/' + opt.input)
 print("input file :", infile)
 tree = infile.Get("t1")
@@ -70,7 +70,7 @@ def make_canvas(title, mean_tot, mean_tot_dev, means, means_dev, step, n_peak):
     c1Clone = c1.Clone()
     return c1Clone
 
-def simultaneous_analysis(peaksG3B, ig3t, ig2b, ig2t, ig1t, ig1b, vg3t, vg2b, vg2t, vg1b, vg1t, outfile, delta_t = 10000):  #delta_t=10000ms
+def simultaneous_analysis(peaksG3B, ig3t, ig2b, ig2t, ig1t, ig1b, vg3t, vg2b, vg2t, vg1b, vg1t, outfile, delta_t = 10000):  #delta_t=10000s
     # starting from peaksG3B -> max prob discharges
     for p in peaksG3B:
         entry_pg3b = p.entry
@@ -106,76 +106,76 @@ def simultaneous_analysis(peaksG3B, ig3t, ig2b, ig2t, ig1t, ig1b, vg3t, vg2b, vg
         gr_curr_g3t.SetName("G3T_current")
         gr_curr_g3t.SetTitle("G3T current")
         gr_curr_g3t.SetMarkerStyle(20)
-        gr_curr_g3t.GetXaxis().SetTitle("time (ms)")
+        gr_curr_g3t.GetXaxis().SetTitle("time (s)")
         gr_curr_g3t.GetYaxis().SetTitle("current (#mu A)")
         gr_volt_g3t = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], vg3t[entry_start:entry_stop_volt])
         gr_volt_g3t.SetName("G3T_voltage")
         gr_volt_g3t.SetTitle("G3T voltage")
         gr_volt_g3t.SetMarkerStyle(20)
-        gr_volt_g3t.GetXaxis().SetTitle("time (ms)")
+        gr_volt_g3t.GetXaxis().SetTitle("time (s)")
         gr_volt_g3t.GetYaxis().SetTitle("voltage (V)")
 
         gr_curr_g2b = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], ig2b[entry_start:entry_stop])
         gr_curr_g2b.SetName("G2B_current")
         gr_curr_g2b.SetTitle("G2B current")
         gr_curr_g2b.SetMarkerStyle(20)
-        gr_curr_g2b.GetXaxis().SetTitle("time (ms)")
+        gr_curr_g2b.GetXaxis().SetTitle("time (s)")
         gr_curr_g2b.GetYaxis().SetTitle("current (#mu A)")
         gr_volt_g2b = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], vg2b[entry_start:entry_stop_volt])
         gr_volt_g2b.SetName("G2B_voltage")
         gr_volt_g2b.SetTitle("G2B voltage")
-        gr_volt_g2b.GetXaxis().SetTitle("time (ms)")
+        gr_volt_g2b.GetXaxis().SetTitle("time (s)")
         gr_volt_g2b.GetYaxis().SetTitle("voltage (V)")
         
         gr_curr_g2t = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], ig2t[entry_start:entry_stop])
         gr_curr_g2t.SetName("G2T_current")
         gr_curr_g2t.SetTitle("G2T current")
         gr_curr_g2t.SetMarkerStyle(20)
-        gr_curr_g2t.GetXaxis().SetTitle("time (ms)")
+        gr_curr_g2t.GetXaxis().SetTitle("time (s)")
         gr_curr_g2t.GetYaxis().SetTitle("current (#mu A)")
         gr_volt_g2t = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], vg2t[entry_start:entry_stop_volt])
         gr_volt_g2t.SetName("G2T_voltage")
         gr_volt_g2t.SetTitle("G2T voltage")
-        gr_volt_g2t.GetXaxis().SetTitle("time (ms)")
+        gr_volt_g2t.GetXaxis().SetTitle("time (s)")
         gr_volt_g2t.GetYaxis().SetTitle("voltage (V)")
 
         gr_curr_g1b = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], ig1b[entry_start:entry_stop])
         gr_curr_g1b.SetName("G1B_current")
         gr_curr_g1b.SetTitle("G1B current")
         gr_curr_g1b.SetMarkerStyle(20)
-        gr_curr_g1b.GetXaxis().SetTitle("time (ms)")
+        gr_curr_g1b.GetXaxis().SetTitle("time (s)")
         gr_curr_g1b.GetYaxis().SetTitle("current (#mu A)")
         gr_volt_g1b = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], vg1b[entry_start:entry_stop_volt])
         gr_volt_g1b.SetName("G1B_voltage") 
         gr_volt_g1b.SetTitle("G1B voltage")
         gr_volt_g1b.SetMarkerStyle(20)
-        gr_volt_g1b.GetXaxis().SetTitle("time (ms)")
+        gr_volt_g1b.GetXaxis().SetTitle("time (s)")
         gr_volt_g1b.GetYaxis().SetTitle("voltage (V)")
 
         gr_curr_g1t = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], ig1t[entry_start:entry_stop])
         gr_curr_g1t.SetName("G1T_current")
         gr_curr_g1t.SetTitle("G1T current")
         gr_curr_g1t.SetMarkerStyle(20)
-        gr_curr_g1t.GetXaxis().SetTitle("time (ms)")
+        gr_curr_g1t.GetXaxis().SetTitle("time (s)")
         gr_curr_g1t.GetYaxis().SetTitle("current (#mu A)")
         gr_volt_g1t = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], vg1t[entry_start:entry_stop_volt])
         gr_volt_g1t.SetName("G1T_voltage") 
         gr_volt_g1t.SetTitle("G1T voltage")
         gr_volt_g1t.SetMarkerStyle(20)
-        gr_volt_g1t.GetXaxis().SetTitle("time (ms)")
+        gr_volt_g1t.GetXaxis().SetTitle("time (s)")
         gr_volt_g1t.GetYaxis().SetTitle("voltage (V)")
         
         gr_curr_drift = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], idrift[entry_start:entry_stop])
         gr_curr_drift.SetName("DRIFT_current")
         gr_curr_drift.SetTitle("DRIFT current")
         gr_curr_drift.SetMarkerStyle(20)
-        gr_curr_drift.GetXaxis().SetTitle("time (ms)")
+        gr_curr_drift.GetXaxis().SetTitle("time (s)")
         gr_curr_drift.GetYaxis().SetTitle("current (#mu A)")
         gr_volt_drift = ROOT.TGraph(entry_stop-entry_start, times[entry_start: entry_stop], vdrift[entry_start:entry_stop_volt])
         gr_volt_drift.SetName("DRIFT_voltage") 
         gr_volt_drift.SetTitle("DRIFT voltage")
         gr_volt_drift.SetMarkerStyle(20)
-        gr_volt_drift.GetXaxis().SetTitle("time (ms)")
+        gr_volt_drift.GetXaxis().SetTitle("time (s)")
         gr_volt_drift.GetYaxis().SetTitle("voltage (V)")
         
         outfile.cd("peak_"+str(p.t_peak))
@@ -200,7 +200,7 @@ def peaks_analysis(channel, ofile, peaks, step):
     #tau_ = []
     outfile.mkdir(channel)
     for index, peak in enumerate(peaks):
-        print("ch:"+channel+" peak #"+str(index))
+        #print("ch:"+channel+" peak #"+str(index))
         if peak.entry == peaks[-1].entry :
             gr_peak = peak.graph_peak(pnt_to_plot = 10)
             gr_volt = peak.graph_voltage(pnt_to_plot = 100)
@@ -255,16 +255,17 @@ def peaks_analysis(channel, ofile, peaks, step):
 
 entries = tree.GetEntries()
 run_date = opt.input.strip('.root')
-if not os.path.exists(run_date):
-    os.makedirs(run_date)
-outfile = ROOT.TFile.Open(run_date+"/"+ run_date+"_allGraph.root", "RECREATE")
+outfolder = "/eos/user/a/acagnott/GEM_plot/"+ run_date
+if not os.path.exists(outfolder):
+    os.makedirs(outfolder)
+outfile = ROOT.TFile.Open(outfolder+"/"+ run_date+"_allGraph.root", "RECREATE")
 print("output file :", outfile)
 
 print("entries:"+str(entries))
 
 
 
-frequency_data = (1./390.)*10**3 #ms 
+frequency_data = (1./380.) #s 
 # 280 Hz
 #390 Hz
 downscale = 1
@@ -274,7 +275,7 @@ if("0008" in run_date): downscale = 50
 
 # per cancellare i primi punti scommentare:
 if("0008" in run_date): trig_entry_current = 0 
-elif("0000" in run_date): trig_entry_current = (int)(0.3*10**6/ frequency_data)  #punti iniziali saltati --> 0.3*10**6 ms 
+elif("0000" in run_date): trig_entry_current = (int)(0.3*10**6/ frequency_data)  #punti iniziali saltati --> 0.3*10**6 s 
 else: trig_entry_current = 0
 
 
@@ -481,23 +482,23 @@ gr_idrift.Write()
 
 outfile.Close()
 
-outfile = ROOT.TFile.Open(run_date+"/"+ run_date+"_discharges.root", "RECREATE")
+outfile = ROOT.TFile.Open(outfolder+"/"+ run_date+"_discharges.root", "RECREATE")
 
 
 #Find_peaks(x, height=None, threshold=None, distance=None, prominence=None, width=None, wlen=None, rel_height=0.5, plateau_size=None)             
-peak_high = 2 #10
+peak_high = 30 #10
 threshold_peak = .5
 prominence_peak = None#.01
-distance = 200 #15ms
-#2000 #50ms
+distance = 5 #15s
+#2000 #50s
 
-peaks_ig1t, properties_ig1t = find_peaks(ig1t, height = 0.06, distance = distance)
-peaks_ig1b, properties_ig1b = find_peaks(ig1b, height = 0.05, distance = distance)
-peaks_ig2t, properties_ig2t = find_peaks(ig2t, height = 61.85, distance = distance)
-peaks_ig2b, properties_ig2b = find_peaks(ig2b, height = 61.85, distance = distance)
+peaks_ig1t, properties_ig1t = find_peaks(ig1t, height = peak_high, distance = distance)
+peaks_ig1b, properties_ig1b = find_peaks(ig1b, height = peak_high, distance = distance)
+peaks_ig2t, properties_ig2t = find_peaks(ig2t, height = peak_high, distance = distance)
+peaks_ig2b, properties_ig2b = find_peaks(ig2b, height = peak_high, distance = distance)
 peaks_ig3t, properties_ig3t = find_peaks(ig3t, height = peak_high, distance= distance)
 peaks_ig3b, properties_ig3b = find_peaks(ig3b, height = peak_high, distance = distance)
-peaks_idrift, properties_idrift = find_peaks(idrift, height = 0.05, distance = distance)
+peaks_idrift, properties_idrift = find_peaks(idrift, height = peak_high, distance = distance)
 print("DRIFT ", peaks_idrift, properties_idrift)
 print("G1T ", peaks_ig1t, properties_ig1t)
 print("G1B ", peaks_ig1b, properties_ig1b)
@@ -542,7 +543,7 @@ for p in peaks_idrift: peaksDRIFT.append(peak(entry = p, t_array = time_current,
 #tau_1B = peaks_analysis("G1B", ofile, peaksG1B, step)
 #tau_drift = peaks_analysis("DRIFT", ofile, peaksDRIFT, step)
 
-
+'''
 #print("ch :G3T")
 peaks_analysis("G3T", outfile, peaksG3T, step)
 #print("ch :G3B")
@@ -557,9 +558,10 @@ peaks_analysis("G1T", outfile, peaksG1T, step)
 peaks_analysis("G1B", outfile, peaksG1B, step)
 #print("ch :GDrift")
 peaks_analysis("DRIFT", outfile, peaksDRIFT, step)
+'''
 outfile.Close()
 
-outfile = ROOT.TFile.Open(run_date+"/peaks_overview.root", "RECREATE")
+outfile = ROOT.TFile.Open(outfolder+"/peaks_overview.root", "RECREATE")
         
 simultaneous_analysis(peaksG3B, ig3t, ig2b, ig2t, ig1t, ig1b, vg3t, vg2b, vg2t, vg1b, vg1t, outfile, delta_t = 10000)
 
