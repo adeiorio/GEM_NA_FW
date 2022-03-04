@@ -1,5 +1,6 @@
 import ROOT
 from array import array
+from datetime import datetime
 import optparse
 from utils import *
 import os
@@ -140,14 +141,15 @@ def simultaneous_analysis(peaksG3B, ig3t, ig2b, ig2t, ig1t, ig1b, vg3t, vg2b, vg
 
         prev_t_peak=p.t_peak
 
-def fit_hist(hist, array):
+
+def fit_hist(hist):
     print("fitting "+ hist.GetName())
     hist_to_fit = hist.Clone()
-    g = ROOT.TF1("g", "gaus", min(array), max(array))
+    xmin = hist_to_fit.GetXaxis().GetXmin()
+    xmax = hist_to_fit.GetXaxis().GetXmax()
+    g = ROOT.TF1("g", "gaus", xmin, xmax)
     hist_to_fit.Fit(g)
     mean, sigma = g.GetParameter(1), g.GetParameter(2)
-    delta = mean +3*sigma
-    print(delta)
     return mean, sigma
 
 def peak_counter(hist, heights, n_bin, outfile, folder):
@@ -165,436 +167,527 @@ def peak_counter(hist, heights, n_bin, outfile, folder):
     c1.SetLogx()
     c1.Print(folder+"/"+hist.GetName()+".png")
     c1.Print(folder+"/"+hist.GetName()+".root")
+
+def event_to_write(idrift, ig1t, ig1b, ig2t, ig2b, ig3t, ig3b, tresholds):
+    #tresholds = [uptres_idrift, dwtres_idrift, uptres_ig1t, dwtres_ig1t, uptres_ig1b, dwtres_ig1b, uptres_ig2t, dwtres_ig2t, uptres_ig2b, 
+    #         dwtres_ig2b, uptres_ig3t, dwtres_ig3t, uptres_ig3b, dwtres_ig3b]
     
+    currs = [idrift, ig1t, ig1b, ig2t, ig2b, ig3t, ig3b]
+    flag1, flag2, flag3, flag4, flag5, flag6, flag7 = True, True, True, True, True, True, True
+    index = 0
+    for curr_val in idrift:
+        flag1 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    index+=1
+    for curr_val in ig1t:
+        flag2 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    index+=1
+    for curr_val in ig1b:
+        flag3 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    index+=1
+    for curr_val in ig2t:
+        flag4 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    index+=1
+    for curr_val in ig2b:
+        flag5 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    index+=1
+    for curr_val in ig3t:
+        flag6 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    index+=1
+    for curr_val in ig3b:
+        flag7 *= (curr_val>tresholds[index*2] or curr_val<tresholds[index*2+1])
+    boolean = flag1 or flag2 or flag3 or flag4 or flag5 or flag6 or flag7
+    return boolean
+
+
+
+
 
 ROOT.gStyle.SetOptStat("emr")
 ROOT.gROOT.SetBatch()
 
-usage = 'python peak_analysis.py' # -f Goliath -i PICO*_run_00**
+usage = 'python peak_analysis.py' #-i PICO*_run_00**
 parser = optparse.OptionParser(usage)
 parser.add_option('-f', '--folder', dest='folder', type='string', default = '/eos/home-a/adeiorio/GEM/Goliath/', help='Default folder is /eos/home-a/adeiorio/GEM/Goliath')
 parser.add_option('-i', '--input', dest='input', type='string', default = 'PICO1_run0001', help="Enter an input root file")
 parser.add_option('-p', '--peakfinder', dest='findpeak', default = False, action='store_true', help = "Default do not use find peaks")
+parser.add_option('-d', '--distributions', dest='dist', default = False, action='store_true', help = "Default do not save distributions")
+parser.add_option('-a', '--all', dest='all', default = False, action='store_true', help = "Default save_all is False")
 (opt, args) = parser.parse_args()
 
 #/eos/home-a/adeiorio/GEM/Goliath
+#/eos/home-a/adeiorio/GEM/LABNA_scariche/10_01_22
 folder = opt.folder
 infile = ROOT.TFile.Open(folder + '/' + opt.input+'.root')
 print("input file :", infile)
 tree = infile.Get("t1")
 entries = tree.GetEntries()
 run_label = opt.input
-outfolder = "/eos/user/a/acagnott/GEM_plot/"+ run_label
-if not os.path.exists(outfolder):
-    os.makedirs(outfolder)
-outfile = ROOT.TFile.Open(outfolder+"/"+ run_label+".root", "RECREATE")
-print("output file :", outfile)
+
+outfolder = folder.replace('/eos/home-a/adeiorio/GEM/', '/eos/home-a/acagnott/GEM_plot/')
+outfolder = outfolder+"/"+run_label
+print outfolder
+start_time = datetime.now()
+
+if 'Goliath' in folder : 
+    time_from_data = False
+    
+    #outfolder = "/eos/user/a/acagnott/GEM_plot/"+ run_label
+
+else: 
+    time_from_data = True
+    #outfolder = "/eos/user/a/acagnott/GEM_plot/LABNA/10_11_22/"+ run_label
+
+#time_from_data = False
 
 print("entries:"+str(entries))
+
+if (opt.all) : save_all= True
+else : save_all = False
+
+#save_all = False
+
+print('save all:',  save_all)
+
+curr_ig3t_distr, curr_ig2t_distr, curr_ig1t_distr, curr_ig3b_distr, curr_ig2b_distr, curr_ig1b_distr, curr_idrift_distr, volt_g3b_distr, volt_g3t_distr, volt_g2b_distr, volt_g2t_distr, volt_g1b_distr, volt_g1t_distr, volt_drift_distr= h_init(nbins_current = 100, xmin_current = -50, xmax_current = 50, nbins_voltage= 4000, xmin_voltage= -3500, xmax_voltage= 0)
 
 acquisition_rate = 380.
 downscale = 1
 acquisition_time = (1./acquisition_rate)*downscale #s
 
-ig1t = array('f')
-ig1b = array('f')
-ig2t = array('f')
-ig2b = array('f')
-ig3t = array('f')
-ig3b = array('f')
-idrift = array('f')
-m_ig1t = array('f')
-m_ig1b = array('f')
-m_ig2t = array('f')
-m_ig2b = array('f')
-m_ig3t = array('f')
-m_ig3b = array('f')
-m_idrift = array('f')
-vg1t = array('f')
-vg1b = array('f')
-vg2t = array('f')
-vg2b = array('f')
-vg3t_ = array('f')
-vg3t = array('f')
-vg3b = array('f')
-vdrift = array('f')
-deltav_drg1t = array('f')
-deltav_g1tg1b = array('f')
-deltav_g1bg2t = array('f')
-deltav_g2tg2b = array('f')
-deltav_g2bg3t = array('f')
-deltav_g3tg3b = array('f')
-time_c = array('f')
-time_v = array('f')
-time_current = array('f')
-time_voltage = array('f')
+if opt.dist:
+    if not os.path.exists(outfolder):
+        os.makedirs(outfolder)
+    outfile = ROOT.TFile.Open(outfolder+"/"+ run_label+".root", "RECREATE")
 
-nbins_current = 100
-xmin_current = -50.
-xmax_current = 50.
-curr_ig3t_distr = ROOT.TH1F("curr_ig3t_distr", "G3T current distribution", nbins_current, xmin_current, xmax_current)
-curr_ig2t_distr = ROOT.TH1F("curr_ig2t_distr", "G2T current distribution", nbins_current, xmin_current, xmax_current)
-curr_ig1t_distr = ROOT.TH1F("curr_ig1t_distr", "G1T current distribution", nbins_current, xmin_current, xmax_current)
-curr_ig3b_distr = ROOT.TH1F("curr_ig3b_distr", "G3B current distribution", nbins_current, xmin_current, xmax_current)
-curr_ig2b_distr = ROOT.TH1F("curr_ig2b_distr", "G2B current distribution", nbins_current, xmin_current, xmax_current)
-curr_ig1b_distr = ROOT.TH1F("curr_ig1b_distr", "G1B current distribution", nbins_current, xmin_current, xmax_current)
-curr_idrift_distr = ROOT.TH1F("curr_idrift_distr", "DRIFT current distribution", nbins_current, xmin_current, xmax_current)
+    outfolder_distr = outfolder+"/distributions"
+    if not os.path.exists(outfolder_distr):
+        os.makedirs(outfolder_distr)
+    print("saving distributions...")
+    
+    for i in range(1, entries):
+        tree.GetEntry(i)
+        curr_ig3t_distr.Fill(tree.I_G3T)
+        curr_ig3b_distr.Fill(tree.I_G3B)
+        curr_ig2t_distr.Fill(tree.I_G2T)
+        curr_ig2b_distr.Fill(tree.I_G2B)
+        curr_ig1t_distr.Fill(tree.I_G1T)
+        curr_ig1b_distr.Fill(tree.I_G1B)
+        curr_idrift_distr.Fill(tree.I_drift)
 
-curr_m_ig3t_distr = ROOT.TH1F("curr_m_ig3t_distr", "G3T current distribution", nbins_current, xmin_current, xmax_current)
-curr_m_ig2t_distr = ROOT.TH1F("curr_m_ig2t_distr", "G2T current distribution", nbins_current, xmin_current, xmax_current)
-curr_m_ig1t_distr = ROOT.TH1F("curr_m_ig1t_distr", "G1T current distribution", nbins_current, xmin_current, xmax_current)
-curr_m_ig3b_distr = ROOT.TH1F("curr_m_ig3b_distr", "G3B current distribution", nbins_current, xmin_current, xmax_current)
-curr_m_ig2b_distr = ROOT.TH1F("curr_m_ig2b_distr", "G2B current distribution", nbins_current, xmin_current, xmax_current)
-curr_m_ig1b_distr = ROOT.TH1F("curr_m_ig1b_distr", "G1B current distribution", nbins_current, xmin_current, xmax_current)
-curr_m_idrift_distr = ROOT.TH1F("curr_m_idrift_distr", "DRIFT current distribution", nbins_current, xmin_current, xmax_current)
+        '''curr_m_ig3t_distr.Fill(-tree.I_G3T)
+        curr_m_ig3b_distr.Fill(-tree.I_G3B)
+        curr_m_ig2t_distr.Fill(-tree.I_G2T)
+        curr_m_ig2b_distr.Fill(-tree.I_G2B)
+        curr_m_ig1t_distr.Fill(-tree.I_G1T)
+        curr_m_ig1b_distr.Fill(-tree.I_G1B)
+        curr_m_idrift_distr.Fill(-tree.I_drift)
+        '''
+        volt_g3t_distr.Fill(tree.I_G3T)
+        volt_g3b_distr.Fill(tree.I_G3B)
+        volt_g2t_distr.Fill(tree.I_G2T)
+        volt_g2b_distr.Fill(tree.I_G2B)
+        volt_g1t_distr.Fill(tree.V_G1T)
+        volt_g1b_distr.Fill(tree.V_G1B)
+        volt_drift_distr.Fill(tree.V_drift)
+    print("HISTOS filled")
+    print_hist(outfolder_distr, curr_ig3t_distr.Clone(), "IG3T_current_distribution", "HIST")    
+    curr_ig3t_distr.Write()
+    print_hist(outfolder_distr, curr_ig3b_distr.Clone(), "IG3B_current_distribution", "HIST")    
+    curr_ig3b_distr.Write()
+    print_hist(outfolder_distr, curr_ig2t_distr.Clone(), "IG2T_current_distribution", "HIST")
+    curr_ig2t_distr.Write()
+    print_hist(outfolder_distr, curr_ig2b_distr.Clone(), "IG2B_current_distribution", "HIST")    
+    curr_ig2b_distr.Write()
+    print_hist(outfolder_distr, curr_ig1t_distr.Clone(), "IG1T_current_distribution", "HIST")    
+    curr_ig1t_distr.Write()
+    print_hist(outfolder_distr, curr_ig1b_distr.Clone(), "IG1B_current_distribution", "HIST")    
+    curr_ig1b_distr.Write()
+    print_hist(outfolder_distr, curr_idrift_distr.Clone(), "IDRIFT_current_distribution", "HIST")
+    curr_idrift_distr.Write()
+    '''
+    print_hist(outfolder_distr, curr_m_ig3t_distr.Clone(), "mIG3T_current_distribution", "HIST")    
+    curr_m_ig3t_distr.Write()
+    print_hist(outfolder_distr, curr_m_ig3b_distr.Clone(), "mIG3B_current_distribution", "HIST")    
+    curr_m_ig3b_distr.Write()
+    print_hist(outfolder_distr, curr_m_ig2t_distr.Clone(), "mIG2T_current_distribution", "HIST")
+    curr_m_ig2t_distr.Write()
+    print_hist(outfolder_distr, curr_m_ig2b_distr.Clone(), "mIG2B_current_distribution", "HIST")    
+    curr_m_ig2b_distr.Write()
+    print_hist(outfolder_distr, curr_m_ig1t_distr.Clone(), "mIG1T_current_distribution", "HIST")    
+    curr_m_ig1t_distr.Write()
+    print_hist(outfolder_distr, curr_m_ig1b_distr.Clone(), "mIG1B_current_distribution", "HIST")    
+    curr_m_ig1b_distr.Write()
+    print_hist(outfolder_distr, curr_m_idrift_distr.Clone(), "mIDRIFT_current_distribution", "HIST")
+    curr_m_idrift_distr.Write()
+    '''
+    volt_g3t_distr.Write()
+    print_hist(outfolder_distr, volt_g3t_distr.Clone(), "G3T_voltage_distribution", "HIST")
+    volt_g3b_distr.Write()
+    print_hist(outfolder_distr, volt_g3b_distr.Clone(), "G3B_voltage_distribution", "HIST")
+    volt_g2t_distr.Write()
+    print_hist(outfolder_distr, volt_g2t_distr.Clone(), "G2T_voltage_distribution", "HIST")
+    volt_g2b_distr.Write()
+    print_hist(outfolder_distr, volt_g2b_distr.Clone(), "G2B_voltage_distribution", "HIST")
+    volt_g1t_distr.Write()
+    print_hist(outfolder_distr, volt_g1t_distr.Clone(), "G1T_voltage_distribution", "HIST")
+    volt_g1b_distr.Write()
+    print_hist(outfolder_distr, volt_g1b_distr.Clone(), "G1B_voltage_distribution", "HIST")
+    volt_drift_distr.Write()
+    print_hist(outfolder_distr, volt_drift_distr.Clone(), "DRIFT_voltage_distribution", "HIST")
+    
+    print("HISTOS: saved")
 
-#entries = 50000
+    hist_names = [curr_ig3t_distr, curr_ig2t_distr, curr_ig1t_distr, curr_ig3b_distr, curr_ig2b_distr, curr_ig1b_distr, 
+                  curr_idrift_distr]#, curr_m_ig3t_distr, curr_m_ig2t_distr, curr_m_ig1t_distr, curr_m_ig3b_distr, 
+                  #curr_m_ig2b_distr, curr_m_ig1b_distr, curr_m_idrift_distr]
+                  #, volt_g3b_distr, volt_g3t_distr, volt_g2b_distr, volt_g2t_distr, volt_g1b_distr, volt_g1t_distr, volt_drift_distr ]
+    means, sigmas = [], []
+    for hist_name in hist_names:
+        mean, sigma = fit_hist(hist_name)
+        means.append(mean)
+        sigmas.append(sigma)
+
+else:
+    outfile = ROOT.TFile.Open(outfolder+"/"+ run_label+".root")
+    hist_names = ['curr_ig3t_distr', 'curr_ig2t_distr', 'curr_ig1t_distr', 'curr_ig3b_distr', 'curr_ig2b_distr', 'curr_ig1b_distr', 
+                  'curr_idrift_distr']#, 'curr_m_ig3t_distr', 'curr_m_ig2t_distr', 'curr_m_ig1t_distr', 'curr_m_ig3b_distr', 
+                  #'curr_m_ig2b_distr', 'curr_m_ig1b_distr', 'curr_m_idrift_distr']
+                  #, 'volt_g3b_distr', 'volt_g3t_distr', 'volt_g2b_distr', 'volt_g2t_distr', 'volt_g1b_distr', 'volt_g1t_distr', 'volt_drift_distr']
+    means, sigmas = [], []
+    for hist_name in hist_names:
+        histo = outfile.Get(hist_name).Clone()
+        mean, sigma = fit_hist(histo)
+        means.append(mean)
+        sigmas.append(sigma)
+
+    outfile = ROOT.TFile.Open(outfolder+"/"+ run_label+".root", "UPDATE")
+
+print means
+print sigmas
+
+uptres_ig3t = means[0]+5*sigmas[0]
+uptres_ig2t = means[1]+5*sigmas[1]
+uptres_ig1t = means[2]+5*sigmas[2]
+uptres_ig3b = means[3]+5*sigmas[3]
+uptres_ig2b = means[4]+5*sigmas[4]
+uptres_ig1b = means[5]+5*sigmas[5]
+uptres_idrift = means[6]+5*sigmas[6]
+dwtres_ig3t = means[0]-5*sigmas[0]
+dwtres_ig2t = means[1]-5*sigmas[1]
+dwtres_ig1t = means[2]-5*sigmas[2]
+dwtres_ig3b = means[3]-5*sigmas[3]
+dwtres_ig2b = means[4]-5*sigmas[4]
+dwtres_ig1b = means[5]-5*sigmas[5]
+dwtres_idrift = means[6]-5*sigmas[6]
+tresholds = [uptres_idrift, dwtres_idrift, uptres_ig1t, dwtres_ig1t, uptres_ig1b, dwtres_ig1b, uptres_ig2t, dwtres_ig2t, uptres_ig2b, 
+             dwtres_ig2b, uptres_ig3t, dwtres_ig3t, uptres_ig3b, dwtres_ig3b]
+
+print("Idrift:"+str(dwtres_idrift)+" to "+str(uptres_idrift))
+print("Ig1t:"+str(dwtres_ig1t)+" to "+str(uptres_ig1t))
+print("Ig1b:"+str(dwtres_ig1b)+" to "+str(uptres_ig1b))
+print("Ig2t:"+str(dwtres_ig2t)+" to "+str(uptres_ig2t))
+print("Ig2t:"+str(dwtres_ig2b)+" to "+str(uptres_ig2b))
+print("Ig3t:"+str(dwtres_ig3t)+" to "+str(uptres_ig3t))
+print("Ig3b:"+str(dwtres_ig3b)+" to "+str(uptres_ig3b))
+
+
+#Variables to save peak
+m_peak_check = 3 # numero di misure che deve restare fuori dai 5 sigam per salvare il picco 
+delay = 1520 #measures between two peaks (every peak in this interval will be reject): 1520->4s
+n_meas = 950 #measures saved around one peak, n_meas before and n_meas after (950->2.5s so in totale we will have 5s)
+
+
+
+if save_all:   
+    ig1t = array('d')
+    ig1b = array('d')
+    ig2t = array('d')
+    ig2b = array('d')
+    ig3t = array('d')
+    ig3b = array('d')
+    idrift = array('d')
+    m_ig1t = array('d')
+    m_ig1b = array('d')
+    m_ig2t = array('d')
+    m_ig2b = array('d')
+    m_ig3t = array('d')
+    m_ig3b = array('d')
+    m_idrift = array('d')
+    vg1t = array('d')
+    vg1b = array('d')
+    vg2t = array('d')
+    vg2b = array('d')
+    vg3t_ = array('d')
+    vg3t = array('d')
+    vg3b = array('d')
+    vdrift = array('d')
+    time_current = array('d')
+    time_voltage = array('d')
+    deltav_drg1t = array('d')
+    deltav_g1tg1b = array('d')
+    deltav_g1bg2t = array('d')
+    deltav_g2tg2b = array('d')
+    deltav_g2bg3t = array('d')
+    deltav_g3tg3b = array('d')
+
+else:
+    ig1t = []
+    ig1b = []
+    ig2t = []
+    ig2b = []
+    ig3t = []
+    ig3b = []
+    idrift = []
+    m_ig1t = []
+    m_ig1b = []
+    m_ig2t = []
+    m_ig2b = []
+    m_ig3t = []
+    m_ig3b = []
+    m_idrift = []
+    vg1t = []
+    vg1b = []
+    vg2t = []
+    vg2b = []
+    vg3t_ = []
+    vg3t = []
+    vg3b = []
+    vdrift = []
+    deltav_drg1t = []
+    deltav_g1tg1b = []
+    deltav_g1bg2t = []
+    deltav_g2tg2b = []
+    deltav_g2bg3t = []
+    deltav_g3tg3b = []
+    time_current = []
+    time_voltage = []
+
+
+last_event_saved = 0
+
 for i in range(1, entries):
+    if(i%1000000==1):print('Event #', i, 'out of', entries)
     tree.GetEntry(i)
+    if (time_from_data and i==1):
+        var = tree.Time
+        temp1 = datetime.fromtimestamp(var)#.strftime('%a, %d %b %Y %H:%M:%S.%f')
+        
+        
+    if save_all:
+        ig3b.append(tree.I_G3B)
+        ig3t.append(tree.I_G3T)
+        ig2t.append(tree.I_G2T)
+        ig2b.append(tree.I_G2B)
+        ig1t.append(tree.I_G1T)
+        ig1b.append(tree.I_G1B)
+        idrift.append(tree.I_drift)
+
+        m_ig3b.append(-tree.I_G3B)
+        m_ig3t.append(-tree.I_G3T)
+        m_ig2t.append(-tree.I_G2T)
+        m_ig2b.append(-tree.I_G2B)
+        m_ig1t.append(-tree.I_G1T)
+        m_ig1b.append(-tree.I_G1B)
+        m_idrift.append(-tree.I_drift)
+
+        if time_from_data:
+            temp = datetime.fromtimestamp(tree.Time)
+            time = temp-temp1
+            if (i<100):
+                print temp1
+                print temp
+                print time
+                print time.microseconds* 10**(-6) + time.seconds
+            time_current.append(time.microseconds*10**(-6) + time.seconds)
+            
+        else:
+            time_current.append(i* acquisition_time) 
+        
+        if (tree.V_G3T<10000 and i >10):
+            vdrift.append(tree.V_drift)
+            vg1t.append(tree.V_G1T)
+            vg1b.append(tree.V_G1B)
+            vg2t.append(tree.V_G2T)
+            vg2b.append(tree.V_G2B)
+            vg3t.append(tree.V_G3T)
+            vg3b.append(tree.V_G3B)
+            if time_from_data:
+                time = datetime.fromtimestamp(tree.Time)
+                time = temp-temp1
+            
+                time_voltage.append(time.microseconds*10**(-6) + time.seconds)
+                
+            else:
+                time_voltage.append(i* acquisition_time)
+            
+            deltav_drg1t.append(-tree.V_drift+tree.V_G1T)
+            deltav_g1tg1b.append(-tree.V_G1T+tree.V_G1B)
+            deltav_g1bg2t.append(-tree.V_G1B+tree.V_G2T)
+            deltav_g2tg2b.append(-tree.V_G2T+tree.V_G2B)
+            deltav_g2bg3t.append(-tree.V_G2B+tree.V_G3T)
+            deltav_g3tg3b.append(-tree.V_G3T+tree.V_G3B)
+    else:
+        to_write = False
+        if(tree.I_drift>tresholds[0] or tree.I_drift<tresholds[1] or tree.I_G1T>tresholds[2] or tree.I_G1T<tresholds[3] or  tree.I_G1B>tresholds[4] or tree.I_G1B<tresholds[5] or 
+           tree.I_G2T>tresholds[6] or tree.I_G2T<tresholds[7] or  tree.I_G2B>tresholds[8] or tree.I_G2B<tresholds[9] or  tree.I_G3T>tresholds[10] or tree.I_G3T<tresholds[11] or
+           tree.I_G3B>tresholds[12] or tree.I_G3B<tresholds[13]):
+        
+            ig1t_ = array('d')
+            ig1b_ = array('d')
+            ig2t_ = array('d')
+            ig2b_ = array('d')
+            ig3t_ = array('d')
+            ig3b_ = array('d')
+            idrift_ = array('d')
+            for j in range(i, i+ m_peak_check):
+                tree.GetEntry(j)
+                ig1t_.append(tree.I_G1T)
+                ig1b_.append(tree.I_G1B)
+                ig2t_.append(tree.I_G2T)
+                ig2b_.append(tree.I_G2B)
+                ig3t_.append(tree.I_G3T)
+                ig3b_.append(tree.I_G3B)
+                idrift_.append(tree.I_drift)
+            to_write = event_to_write(idrift_, ig1t_, ig1b_, ig2t_, ig2b_, ig3t_, ig3b_, tresholds)
+        if(to_write):
+            if(last_event_saved == 0 or i-last_event_saved>delay):
+                k=0
+                last_event_saved = i
+                print('adding an anomalies: event #', i)
+                
+                ig1t_ = array('d')
+                ig1b_ = array('d')
+                ig2t_ = array('d')
+                ig2b_ = array('d')
+                ig3t_ = array('d')
+                ig3b_ = array('d')
+                idrift_ = array('d')
+                mig1t_ = array('d')
+                mig1b_ = array('d')
+                mig2t_ = array('d')
+                mig2b_ = array('d')
+                mig3t_ = array('d')
+                mig3b_ = array('d')
+                midrift_ = array('d')
+                vg1t_ = array('d')
+                vg1b_ = array('d')
+                vg2t_ = array('d')
+                vg2b_ = array('d')
+                vg3t_ = array('d')
+                vg3b_ = array('d')
+                vdrift_ = array('d')
+                deltav_drg1t_ = array('d') 
+                deltav_g1tg1b_ = array('d')
+                deltav_g1bg2t_ = array('d')
+                deltav_g2tg2b_ = array('d')
+                deltav_g2bg3t_ = array('d')
+                deltav_g3tg3b_ = array('d')       
+                time_current_ = array('d')
+                time_voltage_ = array('d')
+                
+                start = i- n_meas
+                stop= i + n_meas
+                if i< n_meas: start = 0
+                if i+n_meas > entries: stop = entries
+                for j in range(start, stop): 
+                    tree.GetEntry(j)                    
+                    
+                    ig1t_.append(tree.I_G1T)
+                    ig1b_.append(tree.I_G1B)
+                    ig2t_.append(tree.I_G2T)
+                    ig2b_.append(tree.I_G2B)
+                    ig3t_.append(tree.I_G3T)
+                    ig3b_.append(tree.I_G3B)
+                    idrift_.append(tree.I_drift)
+                    mig1t_.append(-tree.I_G1T)
+                    mig1b_.append(-tree.I_G1B)
+                    mig2t_.append(-tree.I_G2T)
+                    mig2b_.append(-tree.I_G2B)
+                    mig3t_.append(-tree.I_G3T)
+                    mig3b_.append(-tree.I_G3B)
+                    midrift_.append(-tree.I_drift)
+                    if time_from_data:
+                        time_current.append(tree.Time)
+                    else:
+                        time_current.append(i* acquisition_time)
+
+                    
+                    if (tree.V_G3T<10000 and i >10):
+                        vg1t_.append(tree.V_G1T)
+                        vg1b_.append(tree.V_G1B)
+                        vg2t_.append(tree.V_G2T)
+                        vg2b_.append(tree.V_G2B)
+                        vg3t_.append(tree.V_G3T)
+                        vg3b_.append(tree.V_G3B)
+                        vdrift_.append(tree.V_drift)
+                        deltav_drg1t_.append(-tree.V_drift+tree.V_G1T) 
+                        deltav_g1tg1b_.append(-tree.V_G1T+tree.V_G1B)
+                        deltav_g1bg2t_.append(-tree.V_G1B+tree.V_G2T)
+                        deltav_g2tg2b_.append(-tree.V_G2T+tree.V_G2B)
+                        deltav_g2bg3t_.append(-tree.V_G2B+tree.V_G3T)
+                        deltav_g3tg3b_.append(-tree.V_G3T+tree.V_G3B)
+                        if time_from_data:
+                            time_voltage.append(tree.Time)
+                        else:
+                            time_voltage.append(i* acquisition_time)
+                        
+                
+                time_current.append(time_current_)
+                time_voltage.append(time_voltage_)
+                ig1t.append(ig1t_)
+                ig1b.append(ig1b_)
+                ig2t.append(ig2t_)
+                ig2b.append(ig2b_)
+                ig3t.append(ig3t_)
+                ig3b.append(ig3b_)
+                idrift.append(idrift_)
+                m_ig1t.append(mig1t_)
+                m_ig1b.append(mig1b_)
+                m_ig2t.append(mig2t_)
+                m_ig2b.append(mig2b_)
+                m_ig3t.append(mig3t_)
+                m_ig3b.append(mig3b_)
+                m_idrift.append(midrift_)
+                vg1t.append(vg1t_)
+                vg1b.append(vg1b_)
+                vg2t.append(vg2t_)
+                vg2b.append(vg2b_)
+                vg3t.append(vg3t_)
+                vg3b.append(vg3b_)
+                vdrift.append(vdrift_)
+                deltav_drg1t.append(deltav_drg1t_) 
+                deltav_g1tg1b.append(deltav_g1tg1b_)
+                deltav_g1bg2t.append(deltav_g1bg2t_)
+                deltav_g2tg2b.append(deltav_g2tg2b_)
+                deltav_g2bg3t.append(deltav_g2bg3t_)
+                deltav_g3tg3b.append(deltav_g3tg3b_)
+                
+                
+
+print("Ending loop on event")
+
+if save_all:
     
-    ig3b.append(tree.I_G3B)
-    ig3t.append(tree.I_G3T)
-    ig2t.append(tree.I_G2T)
-    ig2b.append(tree.I_G2B)
-    ig1t.append(tree.I_G1T)
-    ig1b.append(tree.I_G1B)
-    idrift.append(tree.I_drift)
-
-    m_ig3b.append(-tree.I_G3B)
-    m_ig3t.append(-tree.I_G3T)
-    m_ig2t.append(-tree.I_G2T)
-    m_ig2b.append(-tree.I_G2B)
-    m_ig1t.append(-tree.I_G1T)
-    m_ig1b.append(-tree.I_G1B)
-    m_idrift.append(-tree.I_drift)
-
-    time_current.append(i* acquisition_time) 
+    make_plots(outfolder, outfile, time_current, time_voltage, ig1t, ig1b, ig2t, ig2b, ig3t, ig3b, idrift, 
+               m_ig1t, m_ig1b, m_ig2t, m_ig2b, m_ig3t, m_ig3b, m_idrift, 
+               vg1t, vg1b, vg2t, vg2b, vg3t, vg3b, vdrift, deltav_drg1t, deltav_g1tg1b, deltav_g1bg2t, deltav_g2tg2b, deltav_g2bg3t, deltav_g3tg3b, 0)
+else:
     
-    curr_ig3t_distr.Fill(tree.I_G3T)
-    curr_ig3b_distr.Fill(tree.I_G3B)
-    curr_ig2t_distr.Fill(tree.I_G2T)
-    curr_ig2b_distr.Fill(tree.I_G2B)
-    curr_ig1t_distr.Fill(tree.I_G1T)
-    curr_ig1b_distr.Fill(tree.I_G1B)
-    curr_idrift_distr.Fill(tree.I_drift)
-
-    curr_m_ig3t_distr.Fill(-tree.I_G3T)
-    curr_m_ig3b_distr.Fill(-tree.I_G3B)
-    curr_m_ig2t_distr.Fill(-tree.I_G2T)
-    curr_m_ig2b_distr.Fill(-tree.I_G2B)
-    curr_m_ig1t_distr.Fill(-tree.I_G1T)
-    curr_m_ig1b_distr.Fill(-tree.I_G1B)
-    curr_m_idrift_distr.Fill(-tree.I_drift)
-    
-    if (tree.V_G3T<10000 and i > 10) :
-        vdrift.append(tree.V_drift)
-        vg1t.append(tree.V_G1T)
-        vg1b.append(tree.V_G1B)
-        vg2t.append(tree.V_G2T)
-        vg2b.append(tree.V_G2B)
-        vg3t.append(tree.V_G3T)
-        vg3b.append(tree.V_G3B)
-        deltav_drg1t.append(tree.V_drift-tree.V_G1T)
-        deltav_g1tg1b.append(tree.V_G1T-tree.V_G1B)
-        deltav_g1bg2t.append(tree.V_G1B-tree.V_G2T)
-        deltav_g2tg2b.append(tree.V_G2T-tree.V_G2B)
-        deltav_g2bg3t.append(tree.V_G2B-tree.V_G3T)
-        deltav_g3tg3b.append(tree.V_G3T-tree.V_G3B)
-        time_voltage.append(i* acquisition_time)
-       
-nbins_voltage = 100
-volt_g3t_distr = ROOT.TH1F("volt_g3t_distr", "G3T voltage distribution", nbins_voltage, min(vg3t), max(vg3t))
-volt_g2t_distr = ROOT.TH1F("volt_g2t_distr", "G2T voltage distribution", nbins_voltage, min(vg2t), max(vg2t))
-volt_g1t_distr = ROOT.TH1F("volt_g1t_distr", "G1T voltage distribution", nbins_voltage, min(vg1t), max(vg1t))
-volt_g3b_distr = ROOT.TH1F("volt_g3b_distr", "G3B voltage distribution", nbins_voltage, min(vg3b), max(vg3b))
-volt_g2b_distr = ROOT.TH1F("volt_g2b_distr", "G2B voltage distribution", nbins_voltage, min(vg2b), max(vg2b))
-volt_g1b_distr = ROOT.TH1F("volt_g1b_distr", "G1B voltage distribution", nbins_voltage, min(vg1b), max(vg1b))
-volt_drift_distr = ROOT.TH1F("volt_drift_distr", "DRIFT voltage distribution", nbins_voltage, min(vdrift), max(vdrift))
-
-for i in range(len(vg3t)):
-    volt_g3t_distr.Fill(vg3t[i])
-    volt_g3b_distr.Fill(vg3b[i])
-    volt_g2t_distr.Fill(vg2t[i])
-    volt_g2b_distr.Fill(vg2b[i])
-    volt_g1t_distr.Fill(vg1t[i])
-    volt_g1b_distr.Fill(vg1b[i])
-    volt_drift_distr.Fill(vdrift[i])
-
-print_hist(outfolder, curr_ig3t_distr.Clone(), "IG3T_current_distribution", "HIST")    
-curr_ig3t_distr.Write()
-print_hist(outfolder, curr_ig3b_distr.Clone(), "IG3B_current_distribution", "HIST")    
-curr_ig3b_distr.Write()
-print_hist(outfolder, curr_ig2t_distr.Clone(), "IG2T_current_distribution", "HIST")
-curr_ig2t_distr.Write()
-print_hist(outfolder, curr_ig2b_distr.Clone(), "IG2B_current_distribution", "HIST")    
-curr_ig2b_distr.Write()
-print_hist(outfolder, curr_ig1t_distr.Clone(), "IG1T_current_distribution", "HIST")    
-curr_ig1t_distr.Write()
-print_hist(outfolder, curr_ig1b_distr.Clone(), "IG1B_current_distribution", "HIST")    
-curr_ig1b_distr.Write()
-print_hist(outfolder, curr_idrift_distr.Clone(), "IDRIFT_current_distribution", "HIST")
-curr_idrift_distr.Write()
+    for n in range(len(ig1t)):
+        if n<10: 
+            outfolder_peak = outfolder+"/peak_0"+str(n)
+        else:
+            outfolder_peak = outfolder+"/peak_"+str(n)
+        if not os.path.exists(outfolder_peak):
+            os.makedirs(outfolder_peak)
+            
+        make_plots(outfolder_peak, outfile, time_current[n], time_voltage[n], ig1t[n], ig1b[n], ig2t[n], ig2b[n], ig3t[n], ig3b[n], idrift[n], 
+                   m_ig1t[n], m_ig1b[n], m_ig2t[n], m_ig2b[n], m_ig3t[n], m_ig3b[n], m_idrift[n],
+                   vg1t[n], vg1b[n], vg2t[n], vg2b[n], vg3t[n], vg3b[n], vdrift[n], deltav_drg1t[n], deltav_g1tg1b[n], deltav_g1bg2t[n], deltav_g2tg2b[n], deltav_g2bg3t[n], deltav_g3tg3b[n], n) 
+   
 
 
-volt_g3t_distr.Write()
-print_hist(outfolder, volt_g3t_distr.Clone(), "G3T_voltage_distribution", "HIST")
-volt_g3b_distr.Write()
-print_hist(outfolder, volt_g3b_distr.Clone(), "G3B_voltage_distribution", "HIST")
-volt_g2t_distr.Write()
-print_hist(outfolder, volt_g2t_distr.Clone(), "G2T_voltage_distribution", "HIST")
-volt_g2b_distr.Write()
-print_hist(outfolder, volt_g2b_distr.Clone(), "G2B_voltage_distribution", "HIST")
-volt_g1t_distr.Write()
-print_hist(outfolder, volt_g1t_distr.Clone(), "G1T_voltage_distribution", "HIST")
-volt_g1b_distr.Write()
-print_hist(outfolder, volt_g1b_distr.Clone(), "G1B_voltage_distribution", "HIST")
-volt_drift_distr.Write()
-print_hist(outfolder, volt_drift_distr.Clone(), "DRIFT_voltage_distribution", "HIST")
-
-
-gr_idrift = ROOT.TGraph(len(time_current), time_current, idrift)
-gr_idrift.SetName("gr_idrift")
-gr_idrift.SetTitle("I drift")
-gr_idrift.GetXaxis().SetTitle("time (s)")
-gr_idrift.GetYaxis().SetTitle("current (nA)")
-gr_idrift.SetMarkerColor(ROOT.kBlack)
-gr_idrift.SetMarkerStyle(7)
-gr_ig1t = ROOT.TGraph(len(time_current), time_current, ig1t) 
-gr_ig1t.SetName("gr_ig1t")
-gr_ig1t.SetTitle("I g1t")
-gr_ig1t.GetXaxis().SetTitle("time (s)")
-gr_ig1t.GetYaxis().SetTitle("current (nA)")
-gr_ig1t.SetMarkerColor(ROOT.kGreen)
-gr_ig1t.SetMarkerStyle(7)
-gr_ig1b = ROOT.TGraph(len(time_current), time_current, ig1b) 
-gr_ig1b.SetName("gr_ig1b")
-gr_ig1b.SetTitle("I g1b")
-gr_ig1b.GetXaxis().SetTitle("time (s)")
-gr_ig1b.GetYaxis().SetTitle("current (nA)")
-gr_ig1b.SetMarkerColor(ROOT.kGreen+3)
-gr_ig1b.SetMarkerStyle(7)
-gr_ig2t = ROOT.TGraph(len(time_current), time_current, ig2t) 
-gr_ig2t.SetName("gr_ig2t")
-gr_ig2t.SetTitle("I g2t")
-gr_ig2t.GetXaxis().SetTitle("time (s)")
-gr_ig2t.GetYaxis().SetTitle("current (nA)")
-gr_ig2t.SetMarkerColor(ROOT.kCyan)
-gr_ig2t.SetMarkerStyle(7)
-gr_ig2b = ROOT.TGraph(len(time_current), time_current, ig2b) 
-gr_ig2b.SetName("gr_ig2b")
-gr_ig2b.SetTitle("I g2b")
-gr_ig2b.GetXaxis().SetTitle("time (s)")
-gr_ig2b.GetYaxis().SetTitle("current (nA)")
-gr_ig2b.SetMarkerColor(ROOT.kCyan+3)
-gr_ig2b.SetMarkerStyle(7)
-gr_ig3t = ROOT.TGraph(len(time_current), time_current, ig3t) 
-gr_ig3t.SetName("gr_ig3t")
-gr_ig3t.SetTitle("I g3t")
-gr_ig3t.GetXaxis().SetTitle("time (s)")
-gr_ig3t.GetYaxis().SetTitle("current (nA)")
-gr_ig3t.SetMarkerColor(ROOT.kRed)
-gr_ig3t.SetMarkerStyle(7)
-gr_ig3b = ROOT.TGraph(len(time_current), time_current, ig3b) 
-gr_ig3b.SetName("gr_ig3b")
-gr_ig3b.SetTitle("I g3b")
-gr_ig3b.GetXaxis().SetTitle("time (s)")
-gr_ig3b.GetYaxis().SetTitle("current (nA)")
-gr_ig3b.SetMarkerColor(ROOT.kRed+3)
-gr_ig3b.SetMarkerStyle(7)
-
-
-gr_idrift.Write() 
-print_hist(outfolder, gr_idrift.Clone(), "Idrift_time", "AL*")    
-gr_ig1t.Write() 
-print_hist(outfolder, gr_ig1t.Clone(), "Ig1t_time", "AL*")
-gr_ig1b.Write() 
-print_hist(outfolder, gr_ig1b.Clone(), "Ig1b_time", "AL*")
-gr_ig2t.Write() 
-print_hist(outfolder, gr_ig2t.Clone(), "Ig2t_time", "AL*")
-gr_ig2b.Write() 
-print_hist(outfolder, gr_ig2b.Clone(), "Ig2b_time", "AL*")
-gr_ig3t.Write() 
-print_hist(outfolder, gr_ig3t.Clone(), "Ig3t_time", "AL*")
-gr_ig3b.Write()
-print_hist(outfolder, gr_ig3b.Clone(), "Ig3b_time", "AL*")
-
-all_current = [gr_idrift.Clone(), gr_ig1t.Clone(), gr_ig1b.Clone(), gr_ig2t.Clone(), gr_ig2b.Clone(), gr_ig3t.Clone(), gr_ig3b.Clone()]
-print_hist(outfolder, all_current, 'All_currents', "AL*")
-
-gr_m_idrift = ROOT.TGraph(len(time_current), time_current, m_idrift) 
-gr_m_idrift.SetName("gr_m_idrift")
-gr_m_idrift.SetTitle("-I drift")
-gr_m_idrift.GetXaxis().SetTitle("time (s)")
-gr_m_idrift.GetYaxis().SetTitle("current (nA)")
-gr_m_idrift.SetMarkerStyle(7)
-gr_m_ig1t = ROOT.TGraph(len(time_current), time_current, m_ig1t) 
-gr_m_ig1t.SetName("gr_m_ig1t")
-gr_m_ig1t.SetTitle("-I g1t")
-gr_m_ig1t.GetXaxis().SetTitle("time (s)")
-gr_m_ig1t.GetYaxis().SetTitle("current (nA)")
-gr_m_ig1t.SetMarkerStyle(7)
-gr_m_ig1b = ROOT.TGraph(len(time_current), time_current, m_ig1b) 
-gr_m_ig1b.SetName("gr_m_ig1b")
-gr_m_ig1b.SetTitle("-I g1b")
-gr_m_ig1b.GetXaxis().SetTitle("time (s)")
-gr_m_ig1b.GetYaxis().SetTitle("current (nA)")
-gr_m_ig1b.SetMarkerStyle(7)
-gr_m_ig2t = ROOT.TGraph(len(time_current), time_current, m_ig2t) 
-gr_m_ig2t.SetName("gr_m_ig2t")
-gr_m_ig2t.SetTitle("-I g2t")
-gr_m_ig2t.GetXaxis().SetTitle("time (s)")
-gr_m_ig2t.GetYaxis().SetTitle("current (nA)")
-gr_m_ig2t.SetMarkerStyle(7)
-gr_m_ig2b = ROOT.TGraph(len(time_current), time_current, m_ig2b) 
-gr_m_ig2b.SetName("gr_m_ig2b")
-gr_m_ig2b.SetTitle("-I g2b")
-gr_m_ig2b.GetXaxis().SetTitle("time (s)")
-gr_m_ig2b.GetYaxis().SetTitle("current (nA)")
-gr_m_ig2b.SetMarkerStyle(7)
-gr_m_ig3t = ROOT.TGraph(len(time_current), time_current, m_ig3t) 
-gr_m_ig3t.SetName("gr_m_ig3t")
-gr_m_ig3t.SetTitle("-I g3t")
-gr_m_ig3t.GetXaxis().SetTitle("time (s)")
-gr_m_ig3t.GetYaxis().SetTitle("current (nA)")
-gr_m_ig3t.SetMarkerStyle(7)
-gr_m_ig3b = ROOT.TGraph(len(time_current), time_current, m_ig3b) 
-gr_m_ig3b.SetName("gr_m_ig3b")
-gr_m_ig3b.SetTitle("-I g3b")
-gr_m_ig3b.GetXaxis().SetTitle("time (s)")
-gr_m_ig3b.GetYaxis().SetTitle("current (nA)")
-gr_m_ig3b.SetMarkerStyle(7)
-gr_m_idrift.Write() 
-print_hist(outfolder, gr_m_idrift, "m_Idrift_time", "AL*")    
-gr_m_ig1t.Write() 
-print_hist(outfolder, gr_m_ig1t, "m_Ig1t_time", "AL*")
-gr_m_ig1b.Write() 
-print_hist(outfolder, gr_m_ig1b, "m_Ig1b_time", "AL*")
-gr_m_ig2t.Write() 
-print_hist(outfolder, gr_m_ig2t, "m_Ig2t_time", "AL*")
-gr_m_ig2b.Write() 
-print_hist(outfolder, gr_m_ig2b, "m_Ig2b_time", "AL*")
-gr_m_ig3t.Write() 
-print_hist(outfolder, gr_m_ig3t, "m_Ig3t_time", "AL*")
-gr_m_ig3b.Write()
-print_hist(outfolder, gr_m_ig3b, "m_Ig3b_time", "AL*")
-
-gr_vdrift = ROOT.TGraph(len(time_voltage), time_voltage, vdrift)
-gr_vdrift.SetName("gr_vdrift")
-gr_vdrift.SetMarkerStyle(7)
-gr_vdrift.SetTitle("V drift")
-gr_vdrift.GetXaxis().SetTitle("time (s)")
-gr_vdrift.GetYaxis().SetTitle("voltage (V)")
-gr_vdrift.SetMarkerColor(ROOT.kBlack)
-gr_vg1t = ROOT.TGraph(len(time_voltage), time_voltage, vg1t) 
-gr_vg1t.SetName("gr_vg1t")
-gr_vg1t.SetMarkerStyle(7)
-gr_vg1t.SetTitle("V G1T")
-gr_vg1t.GetXaxis().SetTitle("time (s)")
-gr_vg1t.GetYaxis().SetTitle("voltage (V)")
-gr_vg1t.SetMarkerColor(ROOT.kGreen)
-gr_vg1b = ROOT.TGraph(len(time_voltage), time_voltage, vg1b) 
-gr_vg1b.SetName("gr_vg1b")
-gr_vg1b.SetMarkerStyle(7)
-gr_vg1b.SetTitle("V G1B")
-gr_vg1b.GetXaxis().SetTitle("time (s)")
-gr_vg1b.GetYaxis().SetTitle("voltage (V)")
-gr_vg1b.SetMarkerColor(ROOT.kGreen+3)
-gr_vg2t = ROOT.TGraph(len(time_voltage), time_voltage, vg2t) 
-gr_vg2t.SetName("gr_vg2t")
-gr_vg2t.SetMarkerStyle(7)
-gr_vg2t.SetTitle("V G2T")
-gr_vg2t.GetXaxis().SetTitle("time (s)")
-gr_vg2t.GetYaxis().SetTitle("voltage (V)")
-gr_vg2t.SetMarkerColor(ROOT.kCyan)
-gr_vg2b = ROOT.TGraph(len(time_voltage), time_voltage, vg2b) 
-gr_vg2b.SetName("gr_vg2b")
-gr_vg2b.SetMarkerStyle(7)
-gr_vg2b.SetTitle("V G2B")
-gr_vg2b.GetXaxis().SetTitle("time (s)")
-gr_vg2b.GetYaxis().SetTitle("voltage (V)")
-gr_vg2b.SetMarkerColor(ROOT.kCyan+3)
-gr_vg3t = ROOT.TGraph(len(time_voltage), time_voltage, vg3t) 
-gr_vg3t.SetName("gr_vg3t")
-gr_vg3t.SetMarkerStyle(7)
-gr_vg3t.SetTitle("V G3T")
-gr_vg3t.GetXaxis().SetTitle("time (s)")
-gr_vg3t.GetYaxis().SetTitle("voltage (V)")
-gr_vg3t.SetMarkerColor(ROOT.kRed)
-gr_vg3b = ROOT.TGraph(len(time_voltage), time_voltage, vg3b) 
-gr_vg3b.SetName("gr_vg3b")
-gr_vg3b.SetMarkerStyle(7)
-gr_vg3b.SetTitle("V G3B")
-gr_vg3b.GetXaxis().SetTitle("time (s)")
-gr_vg3b.GetYaxis().SetTitle("voltage (V)")
-gr_vg3b.SetMarkerColor(ROOT.kRed+3)
-
-
-gr_vdrift.Write() 
-print_hist(outfolder, gr_vdrift, "Vdrift_time", "AL*")    
-gr_vg1t.Write() 
-print_hist(outfolder, gr_vg1t, "VG1t_time", "AL*")
-gr_vg1b.Write() 
-print_hist(outfolder, gr_vg1b, "Vg1b_time", "AL*")
-gr_vg2t.Write() 
-print_hist(outfolder, gr_vg2t, "Vg2t_time", "AL*")
-gr_vg2b.Write() 
-print_hist(outfolder, gr_vg2b, "Vg2b_time", "AL*")
-gr_vg3t.Write() 
-print_hist(outfolder, gr_vg3t, "Vg3t_time", "AL*")
-gr_vg3b.Write()
-print_hist(outfolder, gr_vg3b, "Vg3b_time", "AL*")
-
-all_voltages = [gr_vdrift.Clone(), gr_vg1t.Clone(), gr_vg1b.Clone(), gr_vg2t.Clone(), gr_vg2b.Clone(), gr_vg3t.Clone(), gr_vg3b.Clone()]
-print_hist(outfolder, all_voltages, 'All_voltages', "AL*")
-
-gr_deltav_drg1t = ROOT.TGraph(len(time_voltage), time_voltage, deltav_drg1t)
-gr_deltav_drg1t.SetName("gr_deltav_grg1t")
-gr_deltav_drg1t.SetMarkerStyle(7)
-gr_deltav_drg1t.SetTitle("#Delta V (drift-G1T)")
-gr_deltav_drg1t.GetXaxis().SetTitle("time (s)")
-gr_deltav_drg1t.GetYaxis().SetTitle("voltage (V)")
-gr_deltav_drg1t.SetMarkerColor(ROOT.kBlack)
-gr_deltav_g1tg1b = ROOT.TGraph(len(time_voltage), time_voltage, deltav_g1tg1b) 
-gr_deltav_g1tg1b.SetName("gr_deltav_g1tg1b")
-gr_deltav_g1tg1b.SetMarkerStyle(7)
-gr_deltav_g1tg1b.SetTitle("#Delta V (G1T-G1B)")
-gr_deltav_g1tg1b.GetXaxis().SetTitle("time (s)")
-gr_deltav_g1tg1b.GetYaxis().SetTitle("voltage (V)")
-gr_deltav_g1tg1b.SetMarkerColor(ROOT.kGreen)
-gr_deltav_g1bg2t = ROOT.TGraph(len(time_voltage), time_voltage, deltav_g1bg2t) 
-gr_deltav_g1bg2t.SetName("gr_deltav_g1bg2t")
-gr_deltav_g1bg2t.SetMarkerStyle(7)
-gr_deltav_g1bg2t.SetTitle("#Delta V (G1B-G2T)")
-gr_deltav_g1bg2t.GetXaxis().SetTitle("time (s)")
-gr_deltav_g1bg2t.GetYaxis().SetTitle("voltage (V)")
-gr_deltav_g1bg2t.SetMarkerColor(ROOT.kGreen+3)
-gr_deltav_g2tg2b = ROOT.TGraph(len(time_voltage), time_voltage, deltav_g2tg2b) 
-gr_deltav_g2tg2b.SetName("gr_deltav_g2tg2b")
-gr_deltav_g2tg2b.SetMarkerStyle(7)
-gr_deltav_g2tg2b.SetTitle("#Delta V (G2T-G2B)")
-gr_deltav_g2tg2b.GetXaxis().SetTitle("time (s)")
-gr_deltav_g2tg2b.GetYaxis().SetTitle("voltage (V)")
-gr_deltav_g2tg2b.SetMarkerColor(ROOT.kBlue)
-gr_deltav_g2bg3t = ROOT.TGraph(len(time_voltage), time_voltage, deltav_g2bg3t) 
-gr_deltav_g2bg3t.SetName("gr_deltav_g2bg3t")
-gr_deltav_g2bg3t.SetMarkerStyle(7)
-gr_deltav_g2bg3t.SetTitle("#Delta V (G2B-G3T)")
-gr_deltav_g2bg3t.GetXaxis().SetTitle("time (s)")
-gr_deltav_g2bg3t.GetYaxis().SetTitle("voltage (V)")
-gr_deltav_g2bg3t.SetMarkerColor(ROOT.kCyan)
-gr_deltav_g3tg3b = ROOT.TGraph(len(time_voltage), time_voltage, deltav_g3tg3b) 
-gr_deltav_g3tg3b.SetName("gr_deltav_g3tg3b")
-gr_deltav_g3tg3b.SetMarkerStyle(7)
-gr_deltav_g3tg3b.SetTitle("#Delta V (G3T-G3B)")
-gr_deltav_g3tg3b.GetXaxis().SetTitle("time (s)")
-gr_deltav_g3tg3b.GetYaxis().SetTitle("voltage (V)")
-gr_deltav_g3tg3b.SetMarkerColor(ROOT.kRed)
-
-all_deltaV = [gr_deltav_drg1t.Clone(), gr_deltav_g1tg1b.Clone(), gr_deltav_g1bg2t.Clone(), gr_deltav_g2tg2b.Clone(), gr_deltav_g2bg3t.Clone(), gr_deltav_g3tg3b.Clone()]
-print_hist(outfolder, all_deltaV, 'All_deltaV', "AL*")
-
-
-#nei run senza accensione o spegnimento delle gem
+#Nei run senza accensione o spegnimento delle gem
 
 if opt.findpeak :
     distance = 1  # 1 secondi 
@@ -739,3 +832,6 @@ for peak in peaks_ig3b: hist_heights1T.Fill(hist_heights1T.FindBin(peak, 1)
 for peak in peaks_idrift: hist_heights1T.Fill(hist_heights1T.FindBin(peak, 1)
 '''
     
+end_time = datetime.now()
+deltatime = end_time-start_time
+print("Finished in "+ str(deltatime))
