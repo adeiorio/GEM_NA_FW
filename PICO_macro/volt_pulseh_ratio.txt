@@ -1,0 +1,264 @@
+
+ PICO1_run0004  1
+G1T voltage(V): 0.302197779605;  deltaG1_mean(V) = 404.267382299 
+    pulse height(nA): 9267.16992188
+    ratio (V/nA): 3.26095002199e-05 -> 32609.5002199 (Ohm) 
+G2T voltage(V): 0.265673378392;  deltaG2_mean(V) =383.442944786 
+    pulse height(nA): 8164.51953125
+    ratio (V/nA): 3.25399893252e-05 -> 32539.9893252 (Ohm) 
+G3T voltage(V): 0.355125619989;  deltaG3_mean(V) =367.435493276 
+    pulse height(nA): 8298.54589844
+    ratio (V/nA): 4.27937164336e-05 -> 42793.7164336 (Ohm) 
+
+ PICO1_run0004  2
+G1T voltage(V): -2.39235261616;  deltaG1_mean(V) =404.210956132 
+    pulse height(nA): 31034.6054688
+    ratio (V/nA): 7.70866128319e-05 -> 77086.6128319 (Ohm) 
+G2T voltage(V): 2.02611765008;  deltaG2_mean(V) =383.633306178 
+    pulse height(nA): 185251.265625
+    ratio (V/nA): 1.09371325656e-05 -> 10937.1325656 (Ohm) 
+G3T voltage(V): 1.51988014623;  deltaG3_mean(V) =367.569963604 
+    pulse height(nA): 16643.671875
+    ratio (V/nA): 9.13188001808e-05 -> 91318.8001808 (Ohm) 
+
+ PICO1_run0004  4
+G1T voltage(V): 0.405697342722;  deltaG1_mean(V) =404.316226485 
+    pulse height(nA): 17535.5722656
+    ratio (V/nA): 2.31356773863e-05 -> 23135.6773863 (Ohm) 
+G2T voltage(V): 0.513385331003;  deltaG2_mean(V) =383.472454513 
+    pulse height(nA): 16380.3466797
+    ratio (V/nA): 3.1341542462e-05 -> 31341.542462 (Ohm) 
+G3T voltage(V): 0.541323756168;  deltaG3_mean(V) =367.466092015 
+    pulse height(nA): 15022.5
+    ratio (V/nA): 3.60341991125e-05 -> 36034.1991125 (Ohm) 
+
+ PICO1_run0004  14
+G1T voltage(V): 0.183567151521;  deltaG1_mean(V) =404.32473363 
+    pulse height(nA): 9117.75683594
+    ratio (V/nA): 2.01329290553e-05 -> 20132.9290553 (Ohm) 
+G2T voltage(V): 0.195600585937;  deltaG2_mean(V) =383.539384766 
+    pulse height(nA): 8304.44921875
+    ratio (V/nA): 2.35537096784e-05 -> 23553.7096784 (Ohm) 
+G3T voltage(V): 0.146298474764;  deltaG3_mean(V) =367.427676135 
+    pulse height(nA): 8007.51416016
+    ratio (V/nA): 1.82701487425e-05 -> 18270.1487425 (Ohm) 
+
+ PICO1_run0004  15
+G1T voltage(V): 0.132361225329;  deltaG1_mean(V) =404.31881065 
+    pulse height(nA): 10008.3115234
+    ratio (V/nA): 1.32251304347e-05 -> 13225.1304347 (Ohm) 
+G2T voltage(V): 0.197343942743;  deltaG2_mean(V) =383.53019512 
+    pulse height(nA): 9450.83691406
+    ratio (V/nA): 2.08811076243e-05 -> 20881.1076243 (Ohm) 
+G3T voltage(V): 0.24564017848;  deltaG3_mean(V) =367.435237507 
+    pulse height(nA): 9195.421875
+    ratio (V/nA): 2.67133125395e-05 -> 26713.3125395 (Ohm) 
+
+ PICO1_run0004  16
+G1T voltage(V): 0.175869911595;  deltaG1_mean(V) =404.31314376 
+    pulse height(nA): 9170.69726562
+    ratio (V/nA): 1.91773762127e-05 -> 19177.3762127 (Ohm) 
+G2T voltage(V): 0.176756913035;  deltaG2_mean(V) =383.524048751 
+    pulse height(nA): 7999.72900391
+    ratio (V/nA): 2.20953625989e-05 -> 22095.3625989 (Ohm) 
+G3T voltage(V): 0.150747487921;  deltaG3_mean(V) =367.410287668 
+    pulse height(nA): 7405.27978516
+    ratio (V/nA): 2.03567579207e-05 -> 20356.7579207 (Ohm) 
+
+ PICO1_run0004  17
+G1T voltage(V): 0.15612291838;  deltaG1_mean(V) =404.302861457 
+    pulse height(nA): 9262.09375
+    ratio (V/nA): 1.68561151068e-05 -> 16856.1151068 (Ohm) 
+G2T voltage(V): 0.160692331414;  deltaG2_mean(V) =383.509351614 
+    pulse height(nA): 8435.10449219
+    ratio (V/nA): 1.90504257017e-05 -> 19050.4257017 (Ohm) 
+G3T voltage(V): 0.246481483861;  deltaG3_mean(V) =367.436990196 
+    pulse height(nA): 7862.37890625
+    ratio (V/nA): 3.13494791844e-05 -> 31349.4791844 (Ohm) 
+
+ PICO1_run0004  1
+G1T voltage(V): 0.302197779605;  deltaG1_mean(V) =404.267382299 
+    pulse height(nA): 9267.16992188
+    ratio (V/nA): 3.26095002199e-05 -> 32609.5002199 (Ohm) 
+G2T voltage(V): 0.265673378392;  deltaG2_mean(V) =383.442944786 
+    pulse height(nA): 8164.51953125
+    ratio (V/nA): 3.25399893252e-05 -> 32539.9893252 (Ohm) 
+G3T voltage(V): 0.355125619989;  deltaG3_mean(V) =367.435493276 
+    pulse height(nA): 8298.54589844
+    ratio (V/nA): 4.27937164336e-05 -> 42793.7164336 (Ohm) 
+
+ PICO1_run0004  2
+G1T voltage(V): -2.39235261616;  deltaG1_mean(V) =404.210956132 
+    pulse height(nA): 31034.6054688
+    ratio (V/nA): 7.70866128319e-05 -> 77086.6128319 (Ohm) 
+G2T voltage(V): 2.02611765008;  deltaG2_mean(V) =383.633306178 
+    pulse height(nA): 185251.265625
+    ratio (V/nA): 1.09371325656e-05 -> 10937.1325656 (Ohm) 
+G3T voltage(V): 1.51988014623;  deltaG3_mean(V) =367.569963604 
+    pulse height(nA): 16643.671875
+    ratio (V/nA): 9.13188001808e-05 -> 91318.8001808 (Ohm) 
+
+ PICO1_run0004  4
+G1T voltage(V): 0.405697342722;  deltaG1_mean(V) =404.316226485 
+    pulse height(nA): 17535.5722656
+    ratio (V/nA): 2.31356773863e-05 -> 23135.6773863 (Ohm) 
+G2T voltage(V): 0.513385331003;  deltaG2_mean(V) =383.472454513 
+    pulse height(nA): 16380.3466797
+    ratio (V/nA): 3.1341542462e-05 -> 31341.542462 (Ohm) 
+G3T voltage(V): 0.541323756168;  deltaG3_mean(V) =367.466092015 
+    pulse height(nA): 15022.5
+    ratio (V/nA): 3.60341991125e-05 -> 36034.1991125 (Ohm) 
+
+ PICO1_run0004  14
+G1T voltage(V): 0.183567151521;  deltaG1_mean(V) =404.32473363 
+    pulse height(nA): 9117.75683594
+    ratio (V/nA): 2.01329290553e-05 -> 20132.9290553 (Ohm) 
+G2T voltage(V): 0.195600585937;  deltaG2_mean(V) =383.539384766 
+    pulse height(nA): 8304.44921875
+    ratio (V/nA): 2.35537096784e-05 -> 23553.7096784 (Ohm) 
+G3T voltage(V): 0.146298474764;  deltaG3_mean(V) =367.427676135 
+    pulse height(nA): 8007.51416016
+    ratio (V/nA): 1.82701487425e-05 -> 18270.1487425 (Ohm) 
+
+ PICO1_run0004  15
+G1T voltage(V): 0.132361225329;  deltaG1_mean(V) =404.31881065 
+    pulse height(nA): 10008.3115234
+    ratio (V/nA): 1.32251304347e-05 -> 13225.1304347 (Ohm) 
+G2T voltage(V): 0.197343942743;  deltaG2_mean(V) =383.53019512 
+    pulse height(nA): 9450.83691406
+    ratio (V/nA): 2.08811076243e-05 -> 20881.1076243 (Ohm) 
+G3T voltage(V): 0.24564017848;  deltaG3_mean(V) =367.435237507 
+    pulse height(nA): 9195.421875
+    ratio (V/nA): 2.67133125395e-05 -> 26713.3125395 (Ohm) 
+
+ PICO1_run0004  16
+G1T voltage(V): 0.175869911595;  deltaG1_mean(V) =404.31314376 
+    pulse height(nA): 9170.69726562
+    ratio (V/nA): 1.91773762127e-05 -> 19177.3762127 (Ohm) 
+G2T voltage(V): 0.176756913035;  deltaG2_mean(V) =383.524048751 
+    pulse height(nA): 7999.72900391
+    ratio (V/nA): 2.20953625989e-05 -> 22095.3625989 (Ohm) 
+G3T voltage(V): 0.150747487921;  deltaG3_mean(V) =367.410287668 
+    pulse height(nA): 7405.27978516
+    ratio (V/nA): 2.03567579207e-05 -> 20356.7579207 (Ohm) 
+
+ PICO1_run0004  17
+G1T voltage(V): 0.15612291838;  deltaG1_mean(V) =404.302861457 
+    pulse height(nA): 9262.09375
+    ratio (V/nA): 1.68561151068e-05 -> 16856.1151068 (Ohm) 
+G2T voltage(V): 0.160692331414;  deltaG2_mean(V) =383.509351614 
+    pulse height(nA): 8435.10449219
+    ratio (V/nA): 1.90504257017e-05 -> 19050.4257017 (Ohm) 
+G3T voltage(V): 0.246481483861;  deltaG3_mean(V) =367.436990196 
+    pulse height(nA): 7862.37890625
+    ratio (V/nA): 3.13494791844e-05 -> 31349.4791844 (Ohm) 
+
+ PICO1_run0032  21
+G1T voltage(V): -0.748571391859;  deltaG1_mean(V) =404.311315532 
+    pulse height(nA): 16547.2148438
+    ratio (V/nA): 4.52385128813e-05 -> 45238.5128813 (Ohm) 
+G2T voltage(V): -8.42131938734;  deltaG2_mean(V) =380.501275442 
+    pulse height(nA): 34981.1445312
+    ratio (V/nA): 0.000240738818017 -> 240738.818017 (Ohm) 
+G3T voltage(V): -0.652096637927;  deltaG3_mean(V) =367.409054646 
+    pulse height(nA): 10583.2216797
+    ratio (V/nA): 6.16160804019e-05 -> 61616.0804019 (Ohm) 
+
+ PICO1_run0032  22
+G1T voltage(V): 0.0472131990132;  deltaG1_mean(V) =404.326077817 
+    pulse height(nA): 15.2495384216
+    ratio (V/nA): 0.0030960411855 -> 3096041.1855 (Ohm) 
+G2T voltage(V): -4.15500006425;  deltaG2_mean(V) =379.697114322 
+    pulse height(nA): 298.9559021
+    ratio (V/nA): 0.013898371081 -> 13898371.081 (Ohm) 
+G3T voltage(V): 0.0404656018709;  deltaG3_mean(V) =367.419129125 
+    pulse height(nA): 13.2742443085
+    ratio (V/nA): 0.00304842979612 -> 3048429.79612 (Ohm) 
+
+ PICO1_run0032  103
+G1T voltage(V): 0.104263723273;  deltaG1_mean(V) =404.543685495 
+    pulse height(nA): 4104.62060547
+    ratio (V/nA): 2.54015494475e-05 -> 25401.5494475 (Ohm) 
+G2T voltage(V): -0.0362453741776;  deltaG2_mean(V) =382.893056898 
+    pulse height(nA): 179.471221924
+    ratio (V/nA): 0.000201956468503 -> 201956.468503 (Ohm) 
+G3T voltage(V): -0.0287384675678;  deltaG3_mean(V) =367.419546573 
+    pulse height(nA): 783.342346191
+    ratio (V/nA): 3.66869832935e-05 -> 36686.9832935 (Ohm) 
+
+ PICO2_run0003  1
+G1T voltage(V): 0.0645299650494;  deltaG1_mean(V) =395.318770816 
+    pulse height(nA): 192.104736328
+    ratio (V/nA): 0.000335910328307 -> 335910.328307 (Ohm) 
+G2T voltage(V): -0.0708814119038;  deltaG2_mean(V) =383.942951724 
+    pulse height(nA): 118.303153992
+    ratio (V/nA): 0.000599150652473 -> 599150.652473 (Ohm) 
+G3T voltage(V): 0.261035092002;  deltaG3_mean(V) =367.57941901 
+    pulse height(nA): 7770.53125
+    ratio (V/nA): 3.35929531205e-05 -> 33592.9531205 (Ohm) 
+
+ PICO2_run0028  0
+G1T voltage(V): 0.529869063528;  deltaG1_mean(V) =400.630043046 
+    pulse height(nA): 9368.62695312
+    ratio (V/nA): 5.65578143072e-05 -> 56557.8143072 (Ohm) 
+G2T voltage(V): 0.417041593853;  deltaG2_mean(V) =389.050487703 
+    pulse height(nA): 9397.68261719
+    ratio (V/nA): 4.43770672878e-05 -> 44377.0672878 (Ohm) 
+G3T voltage(V): 0.271965267784;  deltaG3_mean(V) =373.003181217 
+    pulse height(nA): 8009.60351562
+    ratio (V/nA): 3.39548976742e-05 -> 33954.8976742 (Ohm) 
+
+ PICO2_run0028  1
+G1T voltage(V): -7.34788394326;  deltaG1_mean(V) =399.405989412 
+    pulse height(nA): 17894.984375
+    ratio (V/nA): 0.000410611364016 -> 410611.364016 (Ohm) 
+G2T voltage(V): -9.81658691406;  deltaG2_mean(V) =387.798276367 
+    pulse height(nA): 27960.4414062
+    ratio (V/nA): 0.000351088409923 -> 351088.409923 (Ohm) 
+G3T voltage(V): -0.807255489952;  deltaG3_mean(V) =372.975010617 
+    pulse height(nA): 10005.1728516
+    ratio (V/nA): 8.06838124566e-05 -> 80683.8124566 (Ohm) 
+
+ PICO2_run0028  2
+G1T voltage(V): -19.9412798109;  deltaG1_mean(V) =390.223994655 
+    pulse height(nA): 17894.984375
+    ratio (V/nA): 0.00111435022199 -> 1114350.22199 (Ohm) 
+G2T voltage(V): -21.5656080387;  deltaG2_mean(V) =377.875056281 
+    pulse height(nA): 27960.4414062
+    ratio (V/nA): 0.000771289970903 -> 771289.970903 (Ohm) 
+G3T voltage(V): -0.83282265111;  deltaG3_mean(V) =373.000577778 
+    pulse height(nA): 10005.1728516
+    ratio (V/nA): 8.3239206705e-05 -> 83239.206705 (Ohm) 
+
+ PICO2_run0028  8
+G1T voltage(V): 4.35417801706;  deltaG1_mean(V) =392.581612999 
+    pulse height(nA): 295.624725342
+    ratio (V/nA): 0.0147287342492 -> 14728734.2492 (Ohm) 
+G2T voltage(V): -4.19643586811;  deltaG2_mean(V) =385.678369462 
+    pulse height(nA): 290.945739746
+    ratio (V/nA): 0.0144234312273 -> 14423431.2273 (Ohm) 
+G3T voltage(V): 0.0421847855417;  deltaG3_mean(V) =372.977804228 
+    pulse height(nA): 16.749830246
+    ratio (V/nA): 0.00251852018332 -> 2518520.18332 (Ohm) 
+
+ PICO2_run0028  9
+G1T voltage(V): -4.36897178248;  deltaG1_mean(V) =396.878981548 
+    pulse height(nA): 295.164825439
+    ratio (V/nA): 0.0148018036227 -> 14801803.6227 (Ohm) 
+G2T voltage(V): -2.39165167558;  deltaG2_mean(V) =388.387623355 
+    pulse height(nA): 290.35067749
+    ratio (V/nA): 0.00823711415537 -> 8237114.15537 (Ohm) 
+G3T voltage(V): -0.0270513755397;  deltaG3_mean(V) =372.986432479 
+    pulse height(nA): 16.0070743561
+    ratio (V/nA): 0.00168996375839 -> 1689963.75839 (Ohm) 
+
+ PICO2_run0028  12
+G1T voltage(V): -0.771158254523;  deltaG1_mean(V) =400.516275442 
+    pulse height(nA): 217.224151611
+    ratio (V/nA): 0.0035500576193 -> 3550057.6193 (Ohm) 
+G2T voltage(V): -0.0764667069284;  deltaG2_mean(V) =389.031178621 
+    pulse height(nA): 175.866943359
+    ratio (V/nA): 0.000434798635081 -> 434798.635081 (Ohm) 
+G3T voltage(V): 0.178355263158;  deltaG3_mean(V) =372.98692794 
+    pulse height(nA): 8293.578125
+    ratio (V/nA): 2.15052249427e-05 -> 21505.2249427 (Ohm) 
