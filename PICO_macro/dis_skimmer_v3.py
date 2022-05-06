@@ -70,10 +70,10 @@ acquisition_time = (1./acquisition_rate)*downscale #s
 print("entries:"+str(entries))
 
 #Variables to save peak
-m_peak_check = 3 # numero di misure che deve restare fuori dai 5 sigam per salvare il picco
+m_peak_check = 5 # numero di misure che deve restare fuori dai 5 sigam per salvare il picco
 delay = 950 #measures between two peaks (every peak in this interval will be reject): 1520->4s
 n_meas = 950 #measures saved around one peak, n_meas before and n_meas after (950->2.5ms so in total we will have 5s)
-tres_voltDR = -3295
+tres_voltDR = -2600
 
 ig3t_distr, ig2t_distr, ig1t_distr, ig3b_distr, ig2b_distr, ig1b_distr, idrift_distr, vg3b_distr, vg3t_distr, vg2b_distr, vg2t_distr, vg1b_distr, vg1t_distr, vdrift_distr =  h_init(nbins_current = 100, xmin_current = -50, xmax_current = 50, nbins_voltage= 4000, xmin_voltage= -3500, xmax_voltage= 0)
 
@@ -87,7 +87,7 @@ print(ig3t_distr)
 skimfile = ROOT.TFile.Open(folder + '/' + opt.input+'_skim.root', "RECREATE")
 
 down, up = {},{}
-nsigmas = 5
+nsigmas = 3
 
 for nt in curr_volt_dict.keys():
     print(nt, curr_volt_dict[nt].GetName())
@@ -148,6 +148,8 @@ timestamp_current = array('d', [0]*2*n_meas)
 timestamp_voltage = array('d', [0]*((2*n_meas/100)+1))
 deltatime_current = array('f', [0]*2*n_meas)
 deltatime_voltage = array('f', [0]*((2*n_meas/100)+1))
+corr_time_current = array('d', [0]*2*n_meas)
+corr_time_voltage = array('d', [0]*((2*n_meas/100) +1))
 integral_idrift = array('f', [0])
 integral_ig1t = array('f', [0])
 integral_ig1b = array('f', [0])
@@ -162,6 +164,7 @@ pulseheight_ig2t = array('f', [0])
 pulseheight_ig2b = array('f', [0])
 pulseheight_ig3t = array('f', [0])
 pulseheight_ig3b = array('f', [0])
+
 
 #Branching the output tree
 skimtree.Branch("IG1T", ig1t, "IG1T[1900]/F")
@@ -207,8 +210,10 @@ skimtree.Branch("DeltaV_g2bg3t_var", deltav_g2bg3t_var, "DeltaV_g2bg3t_var[20]/F
 skimtree.Branch("DeltaV_g3tg3b_var", deltav_g3tg3b_var, "DeltaV_g3tg3b_var[20]/F")
 skimtree.Branch("timestamp_current", timestamp_current, "timestamp_current[1900]/D")
 skimtree.Branch("deltatime_current", deltatime_current, "deltatime_current[1900]/F")
+skimtree.Branch("corr_time_current", corr_time_current, "corr_time_current[1900]/F")
 skimtree.Branch("timestamp_voltage", timestamp_voltage, "timestamp_voltage[20]/D")
 skimtree.Branch("deltatime_voltage", deltatime_voltage, "deltatime_voltage[20]/F")
+skimtree.Branch("corr_time_voltage", corr_time_voltage, "deltatime_voltage[20]/F")
 skimtree.Branch("INTEGRAL_IG1T", integral_ig1t, "INTEGRAL_IG1T/F")
 skimtree.Branch("INTEGRAL_IG1B", integral_ig1b, "INTEGRAL_IG1B/F")
 skimtree.Branch("INTEGRAL_IG2T", integral_ig2t, "INTEGRAL_IG2T/F")
@@ -238,7 +243,10 @@ print("stop run: " + stop_run.strftime('%a, %d %b %Y %H:%M:%S.%f'))
 
 print("run lenght: " + str(stop_run-start_run))
 
-for i in range(1, entries):
+diftime = (stop_run - start_run)
+dtime = (diftime.seconds+diftime.microseconds*10**-6)/entries
+
+for i in range(20, entries):
     if(i%1000000==1):print('Event #', i, 'out of', entries)
     tree.GetEntry(i)
     
@@ -306,8 +314,8 @@ for i in range(1, entries):
             m = 0
             for j in range(start, stop):
                 if j==start:
-                    prev_vg1t = 0
-                    prev_vg1t = 0
+                    #prev_vg1t = 0
+                    prev_vg3t = 0
                     prev_deltav_drg1t = 0
                     prev_deltav_g1tg1b = 0
                     prev_deltav_g1bg2t = 0
@@ -326,11 +334,14 @@ for i in range(1, entries):
                 timestamp_current[l] = copy.deepcopy(tree.Time)
                 deltatime = datetime.fromtimestamp(tree.Time)-start_run
                 deltatime_current[l] = copy.deepcopy( deltatime.microseconds*10**(-6) + deltatime.seconds )
-
-                if (tree.V_G3T<10000 and tree.V_G1T!= prev_vg1t and m<20):
+                corr_time_current[l] = copy.deepcopy(dtime*j)
+                
+                #print tree.V_G3T
+                
+                if (tree.V_G3T<10000 and tree.V_G3T!= prev_vg3t and m<20):
                     #print m
-                    #print "V G1T", tree.V_G1T
-                    #print "prev V G1T", prev_vg1t
+                    #print "V G3T", tree.V_G3T
+                    #print "prev V G3T", prev_vg3t
                     vg1t[m] = copy.deepcopy(tree.V_G1T)
                     vg1b[m] = copy.deepcopy(tree.V_G1B)
                     vg2t[m] = copy.deepcopy(tree.V_G2T)
@@ -353,9 +364,10 @@ for i in range(1, entries):
                     timestamp_voltage[m] = copy.deepcopy(tree.Time)
                     deltatime = datetime.fromtimestamp(tree.Time)-start_run
                     deltatime_voltage[m] = copy.deepcopy( deltatime.microseconds*10**(-6) + deltatime.seconds )
+                    corr_time_voltage[m] = copy.deepcopy(dtime*j)
 
                     m += 1
-                    prev_vg1t = tree.V_G1T
+                    prev_vg3t = tree.V_G3T
                     prev_deltav_drg1t = (-tree.V_drift+tree.V_G1T)
                     prev_deltav_g1tg1b = (-tree.V_G1T+tree.V_G1B)
                     prev_deltav_g1bg2t = (-tree.V_G1B+tree.V_G2T)
@@ -387,12 +399,13 @@ for i in range(1, entries):
                 deltav_g2bg3t_var[m] = copy.deepcopy(abs(-tree.V_G2B+tree.V_G3T-prev_deltav_g2bg3t))
                 deltav_g3tg3b_var[m] = copy.deepcopy(abs(-tree.V_G3T+tree.V_G3B-prev_deltav_g3tg3b))
                 timestamp_voltage[m] = copy.deepcopy(tree.Time)
-                print "tree.Time", tree.Time
-                print "timestamp", timestamp_voltage[m]
+                #print "tree.Time", tree.Time
+                #print "timestamp", timestamp_voltage[m]
                 deltatime = datetime.fromtimestamp(tree.Time)-start_run
                 deltatime_voltage[m] = copy.deepcopy( deltatime.microseconds*10**(-6) + deltatime.seconds )
-
-
+                corr_time_voltage[m] = copy.deepcopy(dtime*j)
+                #print deltatime_voltage[m] 
+                #print corr_time_voltage[m]
 
             integral_idrift[0] = integral(idrift, deltatime_current, i)
             integral_ig1t[0] = integral(ig1t, deltatime_current, i)

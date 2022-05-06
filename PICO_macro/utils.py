@@ -21,12 +21,14 @@ variables_to_write = {"pico": 1, "run": 0, "event": 0,
                       "mean_deltav_g1t_dr": 0,"mean_deltav_g1b_g1t": 0,"mean_deltav_g2t_g1b": 0,"mean_deltav_g2b_g2t": 0,"mean_deltav_g3t_g2b": 0,"mean_deltav_g3b_g3t": 0}
 
 
-colors = [ROOT.kBlue,
-          ROOT.kBlack,
+colors = [ROOT.kBlack,
+          ROOT.kGreen,
+          ROOT.kGreen+3,
+          ROOT.kCyan,
+          ROOT.kCyan+3,
           ROOT.kRed,
-          ROOT.kGreen+2,
-          ROOT.kMagenta+2,
-          ROOT.kAzure+6]
+          ROOT.kRed+3
+      ]
 def mean(array):
     sum = 0 
     for val in array:
@@ -506,10 +508,13 @@ def plot_drift( run, entry):
     
 def plot_allch(run, entry, draw_volt = False, data = 'Goliath', fit = False):#, write_file = False):
     
-    infile = ROOT.TFile.Open("/eos/home-a/adeiorio/GEM/"+data+"/"+run+"_skim.root")
+    if 'CERN'  in data:
+        infile = ROOT.TFile.Open("/eos/home-a/acagnott/GEMData/"+data+"/"+run+"_skim.root")
+    else:
+        infile = ROOT.TFile.Open("/eos/home-a/adeiorio/GEM/"+data+"/"+run+"_skim.root")
     print infile
 
-    outfolder_csv = "/eos/home-a/acagnott/GEM_plot/"+data+"/"
+    outfolder_csv = "/eos/home-a/acagnott/GEM_plot/"+data+"/"+run+"/"
     outfolder = outfolder_csv+"graphsdischarges/"
     
     if not os.path.exists(outfolder_csv):
@@ -525,7 +530,7 @@ def plot_allch(run, entry, draw_volt = False, data = 'Goliath', fit = False):#, 
     outfile = ROOT.TFile.Open(outfolder+"/graphs.root","RECREATE")
     pico = run.split("_")[0]
     run_label = run.split("_")[1]
-    run_label = run_label.split('00')[1]
+    run_label = run_label.split('0')[1]#run_label.split('00')[1]
     tree = infile.Get("t1")
 
     tree.GetEntry(entry)
@@ -573,6 +578,12 @@ def plot_allch(run, entry, draw_volt = False, data = 'Goliath', fit = False):#, 
         time_voltage = tree.deltatime_voltage
         timestamp_current = tree.timestamp_current
         timestamp_voltage = tree.timestamp_voltage
+
+    dtime = datetime.fromtimestamp(timestamp_current[len(idrift)-1])-datetime.fromtimestamp(timestamp_current[0])
+    dtime_curr = (dtime.seconds+dtime.microseconds*10**-6)/len(idrift)
+    dtime_volt = (dtime.seconds+dtime.microseconds*10**-6)/len(vdrift)
+    time_current = array('f',[dtime_curr *j  for j in range(len(idrift))])
+    time_voltage = array('f',[dtime_volt *j  for j in range(len(vdrift))])
 
     taus = []
     
@@ -770,7 +781,7 @@ def plot_allch(run, entry, draw_volt = False, data = 'Goliath', fit = False):#, 
     
     all_current = [graph_dr.Clone(), graph_g1t.Clone(), graph_g1b.Clone(), graph_g2t.Clone(), graph_g2b.Clone(), graph_g3t.Clone(), graph_g3b.Clone()]
     print_hist(outfolder, all_current, run+'_'+ str(entry)+'_all_currents', "APL")
-    print_hist(outfolder, graph_dr.Clone(), run+'_'+str(entry)+'_drift',"APL")
+    #print_hist(outfolder, graph_dr.Clone(), run+'_'+str(entry)+'_drift',"APL")
 
     gr_vdrift = make_graph(20, time_voltage, vdrift, "graph_vdrift", "vdrift", "time(s)", "voltage(V)", ROOT.kBlack)
     gr_vg1t = make_graph(20, time_voltage, vg1t, "graph_vg1t", "vg1t", "time(s)", "voltage(V)", ROOT.kGreen)
@@ -797,8 +808,8 @@ def plot_allch(run, entry, draw_volt = False, data = 'Goliath', fit = False):#, 
     graph_delta5 = make_graph(20, time_voltage, delta5, "graph_delta5", "#Delta(G3T-G2B) "+tot_time, "time(s)", "Voltage(V)", ROOT.kCyan+3)
     graph_delta6 = make_graph(20, time_voltage, delta6, "graph_delta6", "#Delta(G3B-G3T) "+tot_time, "time(s)", "Voltage(V)", ROOT.kRed)
     
-    graph_vdrift = make_graph(20, time_voltage, vdrift, "graph_vdrift", "V Drift "+tot_time, "time(s)", "Voltage(V)", ROOT.kBlack)
-    print_hist(outfolder, graph_vdrift, run+'_'+str(entry)+'_vdrift', 'APL')
+    #graph_vdrift = make_graph(20, time_voltage, vdrift, "graph_vdrift", "V Drift "+tot_time, "time(s)", "Voltage(V)", ROOT.kBlack)
+    #print_hist(outfolder, graph_vdrift, run+'_'+str(entry)+'_vdrift', 'APL')
     
     if draw_volt:
         outf = '/eos/home-a/acagnott/www/GEM/graph_deltp10_p20/'+run+"_"+str(entry)
@@ -842,8 +853,12 @@ def write_csv(data, run, entry, optwrite = 'w'):
     # entry = (int)
     
     #data-->
+    print 'data', data
+    if 'filter' in data : path = '/eos/home-a/acagnott/GEMData/'
+    elif 'CERN_P5' in data : path = '/eos/home-a/acagnott/GEMData/'
+    else : path ='/eos/home-a/adeiorio/GEM/'
     
-    infile = ROOT.TFile.Open("/eos/home-a/adeiorio/GEM/"+data+"/"+run+"_skim.root")
+    infile = ROOT.TFile.Open(path+data+"/"+run+"_skim.root")
     tree = infile.Get('t1')
     tree.GetEntry(entry)
     
@@ -909,6 +924,10 @@ def write_csv(data, run, entry, optwrite = 'w'):
     # writing csv 
     outfolder_csv = "/eos/home-a/acagnott/GEM_plot/"+data+"/"
     
+    if not 'Goliath' in data:
+        pico = run
+
+    #print outfolder_csv+pico+'discharges_event.csv'
     f = open(outfolder_csv+pico+'discharges_event.csv', optwrite)
     
     list_variables = variables_to_write.keys()
@@ -928,10 +947,10 @@ def write_csv(data, run, entry, optwrite = 'w'):
     
 
 
-def graph_event(run, entry, write_file=False):
-    infile = ROOT.TFile.Open("/eos/home-a/adeiorio/GEM/Goliath/"+run+"_skim.root")
+def graph_event(folder,run, entry, write_file=False):
+    infile = ROOT.TFile.Open(folder+"/"+run+"_skim.root")
     print infile
-    outfolder = "/eos/home-a/acagnott/GEM_plot/graphsIndSignals/"+run+"_"+str(entry)
+    outfolder = folder.replace("GEMData", "GEM_plot")+"/graphsIndSignals/"+run+"_"+str(entry)
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
     outfile = ROOT.TFile.Open(outfolder+"/graphs.root","RECREATE")
@@ -952,17 +971,24 @@ def graph_event(run, entry, write_file=False):
     delta4 = tree.DeltaV_g2tg2b
     delta5 = tree.DeltaV_g2bg3t
     delta6 = tree.DeltaV_g3tg3b
-    time_current = tree.time_current
     
-    
+    if "CERN_P5" in folder:
+        timestamp_current = tree.timestamp_current
+        dtime = datetime.fromtimestamp(timestamp_current[len(idrift)-1])-datetime.fromtimestamp(timestamp_current[0])
+        dtime_curr = (dtime.seconds+dtime.microseconds*10**-6)/len(idrift)
+        #dtime_volt = (dtime.seconds+dtime.microseconds*10**-6)/len(vdrift)
+        time_current = array('f',[dtime_curr *j  for j in range(len(idrift))])
+        #time_voltage = array('f',[dtime_volt *j  for j in range(len(vdrift))])
+    elif "Goliath" in folder:
+        time_current = tree.time_current
 
-    graph_dr = make_graph(1900, tree.time_current, idrift, "graph_idrift", "idrift", "time(s)", "current(nA)", ROOT.kBlack)
-    graph_g1t = make_graph(1900, tree.time_current, ig1t, "graph_ig1t", "ig1t", "time(s)", "current(nA)", ROOT.kGreen)
-    graph_g1b = make_graph(1900, tree.time_current, ig1b, "graph_ig1b", "ig1b", "time(s)", "current(nA)", ROOT.kGreen+3)
-    graph_g2t = make_graph(1900, tree.time_current, ig2t, "graph_ig2t", "ig2t", "time(s)", "current(nA)", ROOT.kCyan)
-    graph_g2b = make_graph(1900, tree.time_current, ig2b, "graph_ig2b", "ig2b", "time(s)", "current(nA)", ROOT.kCyan+3)    
-    graph_g3t = make_graph(1900, tree.time_current, ig3t, "graph_ig3t", "ig3t", "time(s)", "current(nA)", ROOT.kRed)
-    graph_g3b = make_graph(1900, tree.time_current, ig3b, "graph_ig3b", "ig3b", "time(s)", "current(nA)", ROOT.kRed+3)
+    graph_dr = make_graph(1900, time_current, idrift, "graph_idrift", "idrift", "time(s)", "current(nA)", ROOT.kBlack)
+    graph_g1t = make_graph(1900, time_current, ig1t, "graph_ig1t", "ig1t", "time(s)", "current(nA)", ROOT.kGreen)
+    graph_g1b = make_graph(1900, time_current, ig1b, "graph_ig1b", "ig1b", "time(s)", "current(nA)", ROOT.kGreen+3)
+    graph_g2t = make_graph(1900, time_current, ig2t, "graph_ig2t", "ig2t", "time(s)", "current(nA)", ROOT.kCyan)
+    graph_g2b = make_graph(1900, time_current, ig2b, "graph_ig2b", "ig2b", "time(s)", "current(nA)", ROOT.kCyan+3)    
+    graph_g3t = make_graph(1900, time_current, ig3t, "graph_ig3t", "ig3t", "time(s)", "current(nA)", ROOT.kRed)
+    graph_g3b = make_graph(1900, time_current, ig3b, "graph_ig3b", "ig3b", "time(s)", "current(nA)", ROOT.kRed+3)
  
     graph_dr.Write()
     graph_g1t.Write()
@@ -975,7 +1001,7 @@ def graph_event(run, entry, write_file=False):
     all_current = [graph_dr.Clone(), graph_g1t.Clone(), graph_g1b.Clone(), graph_g2t.Clone(), graph_g2b.Clone(), graph_g3t.Clone(), graph_g3b.Clone()]
     print_hist(outfolder, all_current, run+'_'+ str(entry)+'_all_currents', "APL")
     
-    graph_delta1 = make_graph(20, tree.time_voltage, delta1, "graph_delta1", "#Delta(G1T-Drift)", "time(s)", "Voltage(V)", ROOT.kBlack)
+    '''graph_delta1 = make_graph(20, tree.time_voltage, delta1, "graph_delta1", "#Delta(G1T-Drift)", "time(s)", "Voltage(V)", ROOT.kBlack)
     graph_delta2 = make_graph(20, tree.time_voltage, delta2, "graph_delta2", "#Delta(G1B-G1T)", "time(s)", "Voltage(V)", ROOT.kGreen)
     graph_delta3 = make_graph(20, tree.time_voltage, delta3, "graph_delta3", "#Delta(G2T-G1B)", "time(s)", "Voltage(V)", ROOT.kGreen+3)
     graph_delta4 = make_graph(20, tree.time_voltage, delta4, "graph_delta4", "#Delta(G2B-G2T)", "time(s)", "Voltage(V)", ROOT.kCyan)
@@ -991,7 +1017,7 @@ def graph_event(run, entry, write_file=False):
     
     all_deltaV = [graph_delta1.Clone(), graph_delta2.Clone(), graph_delta3.Clone(), graph_delta4.Clone(), graph_delta5.Clone(), graph_delta6.Clone()]
     print_hist(outfolder, all_deltaV, run+'_'+ str(entry)+'_all_deltaV', "APL")
-    
+    '''
     in_drift = Get_index(idrift, min(idrift))
     in_g1t = Get_index(ig1t, min(ig1t))
     in_g1b = Get_index(ig1b, min(ig1b))

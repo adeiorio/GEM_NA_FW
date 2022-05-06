@@ -1,0 +1,10 @@
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0060  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0061  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0062  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0063  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0064  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0065  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0066  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0067  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0068  &
+python dis_skimmer_v3.py -f /eos/home-a/acagnott/GEMData/CERN_P5 -i PICO1_run0069  &

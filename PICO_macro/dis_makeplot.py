@@ -32,6 +32,7 @@ if data_folder == 'LABGEM_scariche':
 
 #outfolder = "/eos/home-a/acagnott/GEM_plot/"+data_folder+"/"+opt.input+"/"
 
+
 write_file = opt.write_file
 
 csv_created = opt.append_file
@@ -125,6 +126,13 @@ h_chs.GetXaxis().SetBinLabel(3, "G3")
 
 ch_name = ["DRIFT", "G1T", "G1B", "G2T", "G2B", "G3T", "G3B"]
 
+disdrift = 0
+disg1t = 0
+disg2t = 0
+disg3t = 0
+disg1b = 0
+disg2b = 0
+disg3b = 0
 
 for j in range(entries):
     tree.GetEntry(j)
@@ -136,8 +144,28 @@ for j in range(entries):
     
     #if (tree.TRDRIFT): plot_drift(opt.input, j)
     
-    if((tree.TRDRIFT and not tree.TRG1T and not tree.TRG1B and not tree.TRG2T and not tree.TRG2B and not tree.TRG3T and not tree.TRG3B)): continue
-    
+    if((tree.TRDRIFT and not tree.TRG1T and not tree.TRG1B and not tree.TRG2T and not tree.TRG2B and not tree.TRG3T and not tree.TRG3B)): 
+        disdrift +=1
+        #print 'event'+str(j)
+    if((not tree.TRDRIFT and tree.TRG1T and not tree.TRG1B and not tree.TRG2T and not tree.TRG2B and not tree.TRG3T and not tree.TRG3B)):
+        print 'event g1t' +str(j)
+        disg1t +=1
+    if((not tree.TRDRIFT and not tree.TRG1T and not tree.TRG1B and tree.TRG2T and not tree.TRG2B and not tree.TRG3T and not tree.TRG3B)): 
+        print 'event g2t' +str(j)
+        disg2t +=1
+    if((not tree.TRDRIFT and not tree.TRG1T and not tree.TRG1B and not tree.TRG2T and not tree.TRG2B and tree.TRG3T and not tree.TRG3B)): 
+        print 'event g3t' +str(j)
+        disg3t +=1
+    if((not tree.TRDRIFT and not tree.TRG1T and tree.TRG1B and not tree.TRG2T and not tree.TRG2B and not tree.TRG3T and not tree.TRG3B)):
+        print 'event g1b' +str(j)
+        disg1b +=1
+    if((not tree.TRDRIFT and not tree.TRG1T and not tree.TRG1B and not tree.TRG2T and tree.TRG2B and not tree.TRG3T and not tree.TRG3B)): 
+        print 'event g2b' +str(j)
+        disg2b +=1
+    if((not tree.TRDRIFT and not tree.TRG1T and not tree.TRG1B and not tree.TRG2T and not tree.TRG2B and not tree.TRG3T and tree.TRG3B)): 
+        print 'event g3b' +str(j)
+        disg3b +=1
+
     TR_list = {"DRIFT":tree.TRDRIFT, "G1T":tree.TRG1T, "G1B":tree.TRG1B, "G2T":tree.TRG2T, "G2B":tree.TRG2B, 
                "G3T":tree.TRG3T, "G3B":tree.TRG3B}
 
@@ -159,7 +187,7 @@ for j in range(entries):
                 integrals.append(integral_list[ch])
                 heights.append(pulseheight_list[ch])
             if (ch!="DRIFT"):
-                if(abs(pulseheight_typ1_list[ch])>1000 and abs(integral_list[ch]/pulseheight_list[ch])>10 and abs(integral_list[ch])>100000):
+                if(abs(pulseheight_typ1_list[ch])>50 and abs(integral_list[ch]/pulseheight_list[ch])>10 and abs(integral_list[ch])>100000):
                     print("flag True "+ch, j)
                     flag_list[ch] = True
                     
@@ -220,7 +248,7 @@ for j in range(entries):
 
     if(cond1> 6 and cond2):
         n_ind += 1
-        graph_event(opt.input, j, write_file)
+        graph_event(folder, opt.input, j, write_file)
         dict = {"drift": abs(tree.PULSEHEIGHT_IDRIFT), "g1t":abs(tree.PULSEHEIGHT_IG1T), "g1b":abs(tree.PULSEHEIGHT_IG1B),
                 "g2t":abs(tree.PULSEHEIGHT_IG2T) , "g2b":abs(tree.PULSEHEIGHT_IG2B) ,"g3t":abs(tree.PULSEHEIGHT_IG3T) , 
                 "g3b":abs(tree.PULSEHEIGHT_IG3B) }
@@ -228,6 +256,13 @@ for j in range(entries):
         
 
 print("number of inducted signals: ",n_ind)
+print("number of only drift: ",disdrift)
+print("number of onlyg1t: ",disg1t)
+print("number of onlyg2t: ",disg2t)
+print("number of onlyg3t: ",disg3t)
+print("number of onlyg1b: ",disg1b)
+print("number of onlyg2b: ",disg2b)
+print("number of onlyg3b: ",disg3b)
 
 '''outfile = ROOT.TFile.Open(outfolder+"discharges_count.root", "RECREATE")    
 pulseheight = array('f')
@@ -387,7 +422,10 @@ else:
     f = open("dis_rate"+pico+".txt", "a")
 f.write(str(n_run)+", "+ str(dis_rate)+"\n")
 '''
-
+if data_folder != 'Goliath':
+    pico = opt.input
+'''    
 outfolder = "/eos/home-a/acagnott/GEM_plot/"+data_folder
 df = pd.read_csv(outfolder+"/"+ pico+'discharges_event.csv')
 df.to_root(outfolder+"/"+ pico+'discharges_event.root', key='t1')
+'''
